@@ -1,0 +1,104 @@
+.token-booking-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(120deg, #d6bfed, #d6e2f4);
+  font-family: Arial, sans-serif;
+}
+
+.token-booking-box {
+  background: #fff;
+  padding: 35px 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  width: 400px;
+}
+
+.token-booking-box h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.token-booking-box form {
+  display: flex;
+  flex-direction: column;
+}
+
+.token-booking-box label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #444;
+}
+
+.token-booking-box select,
+.token-booking-box input[type="time"] {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.token-booking-box select:focus,
+.token-booking-box input[type="time"]:focus {
+  border-color: #2575fc;
+}
+
+.token-booking-box button {
+  background: #2575fc;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background 0.3s;
+}
+
+.token-booking-box button:hover {
+  background: #1e5ed6;
+}
+
+.token-booking-box p {
+  text-align: center;
+  margin-top: 15px;
+  font-weight: bold;
+  color: #444;
+}
+
+
+.slots-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.slot-btn {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.slot-btn.available {
+    background-color: #28a745;
+    color: white;
+}
+
+.slot-btn.available:hover {
+    background-color: #218838;
+}
+
+.slot-btn.booked {
+    background-color: #dc3545;
+    color: white;
+    cursor: not-allowed;
+}
+
+
