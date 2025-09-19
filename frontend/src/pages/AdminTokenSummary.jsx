@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import "../components/summary.css";
 
 const AdminTokenSummary = () => {
   const [summary, setSummary] = useState(null);
@@ -64,11 +65,12 @@ const AdminTokenSummary = () => {
   };
 
   if (loading) return <p>Loading summary...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (error) return <p className='error'>{error}</p>;
 
   return (
-    <div className="container">
-      <h2>Today's Token Summary</h2>
+    <>
+    <div className="summary-container">
+      <h2 className='page-title'>Today's Token Summary</h2>
 
       {/* Summary Cards */}
       <div className="summary-cards" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
@@ -77,26 +79,27 @@ const AdminTokenSummary = () => {
         <SummaryCard title="Booked" count={summary.bookedTokens} color="orange" />
         <SummaryCard title="Processing" count={summary.processingTokens} color="blue" />
         <SummaryCard title="Cancelled" count={summary.cancelledTokens} color="red" />
+        <SummaryCard title="Expired" count={summary.expiredTokens} color="red" />
       </div>
 
       {/* Filter Section */}
-      <div style={{ marginTop: "2rem", padding: "1rem", border: "1px solid #ccc", borderRadius: "8px" }}>
+      <div className='filter-box'>
         <h3>Filter Tokens</h3>
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+        <div className='filter-controls'>
           <input type="number" placeholder="Branch ID" value={branchId} onChange={(e) => setBranchId(e.target.value)} />
           <input type="number" placeholder="Service ID" value={serviceId} onChange={(e) => setServiceId(e.target.value)} />
           <DatePicker selected={startTime} onChange={(date) => setStartTime(date)} showTimeSelect dateFormat="yyyy-MM-dd'T'HH:mm" />
           <DatePicker selected={endTime} onChange={(date) => setEndTime(date)} showTimeSelect dateFormat="yyyy-MM-dd'T'HH:mm" />
-          <button onClick={handleFilter} style={{ background: 'blue', color: 'white', padding: '0.5rem 1rem' }}>
+          <button onClick={handleFilter} className='filter-btn'>
             Apply Filter
           </button>
         </div>
       </div>
 
       {/* Token Table */}
-      <h3 style={{ marginTop: "2rem" }}>Tokens</h3>
-      <table border="1" cellPadding="8" style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead style={{ backgroundColor: "#f0f0f0" }}>
+      <h3 className='table-title'>Tokens</h3>
+      <table className='table-wrapper'>
+        <thead className='token-table'>
           <tr>
             <th>ID</th>
             <th>Customer Name</th>
@@ -121,6 +124,7 @@ const AdminTokenSummary = () => {
                   <option value="IN_PROCESS">Processing</option>
                   <option value="SERVED">Completed</option>
                   <option value="CANCELLED">Cancelled</option>
+                  <option value="EXPIRED">Expired</option>
                 </select>
               </td>
             </tr>
@@ -128,21 +132,17 @@ const AdminTokenSummary = () => {
         </tbody>
       </table>
     </div>
+    <footer className="footer">
+      &copy; {new Date().getFullYear()} Bank Token Booking System. All rights reserved.
+    </footer>
+    </>
   );
 };
 
 const SummaryCard = ({ title, count, color }) => (
-  <div style={{
-    padding: "1rem",
-    borderRadius: "8px",
-    backgroundColor: "#f9f9f9",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-    width: "180px",
-    textAlign: "center",
-    borderLeft: `6px solid ${color}`
-  }}>
-    <h4 style={{ marginBottom: "0.5rem" }}>{title}</h4>
-    <p style={{ fontSize: "1.5rem", fontWeight: "bold", color }}>{count}</p>
+  <div className='summary-card' style={{borderLeft: `6px solid ${color}`}}>
+    <h4>{title}</h4>
+    <p style={{ color }}>{count}</p>
   </div>
 );
 

@@ -5,6 +5,8 @@
     background-color: #004080;
     padding: 12px 20px;
     color: white;
+    position: relative;
+    z-index: 2;
 }
 
 .logo {
@@ -25,10 +27,11 @@
 }
 
 .nav-links li a:hover {
-    text-decoration: underline;
+    text-decoration: none;
+    color: black;
 }
 .navbar-logout-btn {
-  background-color: transparent; /* blends with dark navbar */
+  background-color: transparent; 
   color: white;
   border: 1px solid white;
   border-radius: 6px;

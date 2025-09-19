@@ -71,7 +71,8 @@ const cancelToken = async (id) => {
     }
   };
 
-  return (
+  return ( 
+    <div className="my-token">
     <div className="tokens-container">
       <h2 className="tokens-title">🎟 My Booked Tokens</h2>
 
@@ -95,6 +96,7 @@ const cancelToken = async (id) => {
                 <th>Branch</th>
                 <th>Service</th>
                 <th>Status</th>
+                <th>Booking Date</th>
                 <th>Booking Time</th>
                 <th>Action</th>
               </tr>
@@ -114,6 +116,7 @@ const cancelToken = async (id) => {
                       {token.status}
                     </span>
                   </td>
+                  <td>{token.bookingDate}</td>
                   <td>{token.slotTime}</td>
                   <td>
                     {(token.status === "BOOKED") && (
@@ -126,6 +129,10 @@ const cancelToken = async (id) => {
           </table>
         </>
       )}
+    </div>
+    <footer className="footer">
+      &copy; {new Date().getFullYear()} Bank Token Booking System. All rights reserved.
+    </footer>
     </div>
   );
 };

@@ -154,6 +154,8 @@ const UserProfile = () => {
   };
 
   return (
+    <>
+    <div className="my-profile">
     <div className="profile-wrapper">
       <h2 className="profile-heading">👤 My Profile</h2>
 
@@ -211,6 +213,12 @@ const UserProfile = () => {
         </div>
       )}
     </div>
+    
+    </div>
+    <footer className="footer">
+      &copy; {new Date().getFullYear()} Bank Token Booking System. All rights reserved.
+    </footer>
+    </>
   );
 };
 

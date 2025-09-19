@@ -10,17 +10,22 @@ const Navbar =() => {
     useEffect(() => {
         const token = localStorage.getItem("token");
         const userRole = localStorage.getItem("role");
-        if (token) {
+        if (token && userRole) {
             setIsLoggedIn(true);
             setRole(userRole ? userRole.toUpperCase() : "");
+        }
+        else {
+            setIsLoggedIn(false);
+            setRole("");
         }
     }, []);
 
     const handleLogout = () => {
         localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        localStorage.removeItem("userId");
         localStorage.removeItem("role");
         navigate("/login");
+        window.location.reload();
     };
 
     return (

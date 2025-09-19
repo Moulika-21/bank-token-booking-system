@@ -1,0 +1,161 @@
+.summary-container {
+  position: relative;
+  padding: 2rem;
+  color: #333;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.page-title {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.summary-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.summary-card {
+  padding: 1rem;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  width: 180px;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+.summary-card:hover {
+  transform: translateY(-5px);
+}
+.summary-card h4 {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+.summary-card p {
+  font-size: 1.6rem;
+  font-weight: bold;
+}
+
+.filter-box {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: #f9f9f9;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.filter-controls input,
+.filter-controls .react-datepicker-wrapper {
+  flex: 1;
+  min-width: 160px;
+}
+.filter-btn {
+  background: #6c63ff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.filter-btn:hover {
+  background: #574bdb;
+}
+
+.table-title {
+  margin-top: 2rem;
+  font-size: 1.4rem;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.token-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  font-size: 0.8rem;
+}
+.token-table th,
+.token-table td {
+  padding: 1.8rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+.token-table th {
+  background: #f4f4f4;
+  font-weight: bold;
+  font-size: 1.05rem;
+}
+
+.token-table td{
+  font-size: 1rem;
+}
+.status-badge {
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+}
+.status-badge.booked { background: #ff9800; }
+.status-badge.in_process { background: #2196f3; }
+.status-badge.served { background: #28a745; }
+.status-badge.cancelled { background: #f44336; }
+.status-badge.expired { background: #9c27b0; }
+
+.status-select {
+  padding: 0.3rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.loading {
+  text-align: center;
+  font-size: 1.2rem;
+}
+.error {
+  text-align: center;
+  color: red;
+  font-size: 1.2rem;
+}
+
+
+.summary-container::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  opacity: 0.15;
+  z-index: -1;
+  background: url("../images/image.png") no-repeat center center fixed;
+  background-size: cover;
+}
+
+.footer {
+  width: 100%;
+  margin-top: 30px;
+  background-color: #555;
+  color: #f0f0f0;
+  padding: 15px 10px;
+  border-top: 1px solid #ccc;
+  font-size: 14px;
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}

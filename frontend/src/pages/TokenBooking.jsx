@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../components/tokenBooking.css";
+import { toast, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 const TokenBooking = () => {
   const [branches, setBranches] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [services, setServices] = useState([]);
   const [slots, setSlots] = useState([]);
   const [formData, setFormData] = useState({
@@ -14,8 +17,12 @@ const TokenBooking = () => {
     bookingDate: new Date().toISOString().split("T")[0],
   });
   const [message, setMessage] = useState("");
+  const today = new Date();
+  const next7Days = new Date(today);
+  next7Days.setDate(today.getDate() + 7);
 
-  // Fetch branches & services
+  const formatDate = (date) => date.toISOString().split("T")[0];
+
   useEffect(() => {
     axios
       .get("http://localhost:8083/api/branches")
@@ -28,7 +35,6 @@ const TokenBooking = () => {
       .catch((err) => console.error(err));
   }, []);
 
-  // Fetch slots whenever filters change
   useEffect(() => {
     if (formData.branchId && formData.serviceId && formData.transactionType) {
       const branchName = branches.find((b) => b.id == formData.branchId)?.name;
@@ -84,16 +90,21 @@ const TokenBooking = () => {
     axios
       .post("http://localhost:8083/api/tokens/book", payload)
       .then((res) => {
-        setMessage(
-          `✅ Token Booked! Your Token Number is ${res.data.tokenNumber}`
-        );
-
+        toast.success(`✅ Token Booked! Your Token Number is ${res.data.tokenNumber}`);
       })
       
-      .catch(() => setMessage("❌ Token booking failed. Try again."));
-  };
+      .catch((err) => { 
+        
+        const errorMsg= err.response?.data?.message || "❌ Token booking failed. Try again.";
+        toast.error(errorMsg);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+    };
 
   return (
+    <div>
     <div className="token-booking-container">
       <div className="token-booking-box">
         <h2>Book a Token</h2>
@@ -145,37 +156,40 @@ const TokenBooking = () => {
             type="date"
             name="bookingDate"
             value={formData.bookingDate}
+            min={formatDate(today)}  //  disables past dates
+            max={formatDate(next7Days)} // only allows next 7 days
             onChange={handleChange}
             required
           />
         <br></br>
           <label>Select Slot:</label>
-          <select
-            name="slotTime"
-            value={formData.slotTime}
-            onChange={handleChange}
-            required
-          >
-            <option value="">-- Select Slot --</option>
+          <div className="slots-grid">
             {slots.map((slot) => (
-              <option
+              <button
                 key={slot.slotTime}
-                value={slot.slotTime}
+                type="button"
+                className={`slot-btn ${slot.booked ? "booked" : "available"} ${formData.slotTime === slot.slotTime ? "selected" : ""}`}
+                onClick={() =>
+                  !slot.booked &&
+                  setFormData((prev) => ({ ...prev, slotTime: slot.slotTime }))
+                }
                 disabled={slot.booked}
-                style={{
-                  color: slot.isBooked ? "red" : "green",
-                  fontWeight: slot.isBooked ? "bold" : "normal",
-                }}
               >
-                {slot.slotTime} {slot.booked ? "(Booked)" : `(Available)`};
-              </option>
+                {slot.slotTime}
+              </button>
             ))}
-          </select>
+          </div>
 
-          <button type="submit">Book Token</button>
+          <button type="submit" disabled={loading}>
+            {loading ? "Booking..." : "Book Token"}
+          </button>
         </form>
-        {message && <p>{message}</p>}
       </div>
+      <ToastContainer position="top-right" autoClose={3000} />
+    </div>
+    <footer className="footer">
+      &copy; {new Date().getFullYear()} Bank Token Booking System. All rights reserved.
+    </footer>
     </div>
   );
 };

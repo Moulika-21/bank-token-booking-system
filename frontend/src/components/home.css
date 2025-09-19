@@ -1,12 +1,64 @@
+.layout-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.page-wrapper {
+  max-width: 1100px;  /* Limits width on big screens */
+  margin: 20px auto;  /* Centers horizontally */
+  padding: 40px 20px;
+  border: 2px solid #007bff; /* Blue border */
+  border-radius: 12px;
+  background-color: white; /* So border stands out */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  min-height: 80vh;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  /* justify-content: space-between; */
+}
 .home-container {
+  max-width: 1100px;
+  flex-grow: 1;
+  z-index: 1;
   text-align: center;
   padding: 20px;
+  min-height: 100vh;
+  background: url("../images/image.png") no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
 }
 
-.home-title {
+.home-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.85); /* overlay */
+  z-index: 0;
+}
+
+.home-title,.home-container h1 {
   margin-bottom: 30px;
   font-size: 28px;
   color: #2c3e50;
+  position: relative;
+}
+
+.home-card.disabled {
+  opacity: 0.5;
+  pointer-events: none; /* disables clicks */
+  cursor: not-allowed;
+  background-color: #f0f0f0;
+  color: #888;
+}
+
+.visitor-section,
+.card-grid {
+  position: relative; /* ensures content stays above overlay */
+  z-index: 1;
 }
 
 .card-grid {
@@ -14,6 +66,7 @@
   justify-content: center;
   gap: 20px;
   flex-wrap: wrap;
+  margin-top: 40px;
 }
 
 .home-card {
@@ -39,4 +92,92 @@
 
 .home-card p {
   color: #555;
+}
+
+.visitor-section {
+  margin-top: 40px;
+}
+
+.visitor-text {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.visitor-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background-color: #004080;
+  color: white;
+  font-weight: bold;
+}
+
+.btn-outline {
+  background-color: white;
+  color: #004080;
+  border: 2px solid #004080;
+}
+
+.btn:hover {
+  opacity: 0.85;
+}
+
+.description {
+  margin-top: 20px;
+  font-size: 18px;
+  margin: 0 auto;
+  line-height: 1.6;
+  color: #2c3e50;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  opacity: 1 !important; 
+  z-index: 2;
+  position: relative;
+  max-width: 800px;
+}
+
+.features-list {
+  list-style-type: disc;       
+  list-style-position: inside; 
+  padding-left: 0;  
+  padding: 0;
+  margin: 20px 0;
+  font-family: 'Roboto', sans-serif; 
+  font-size: 17px;
+  color: #34495e;
+}
+
+.features-list li {
+  margin-bottom: 12px;
+  padding-left: 0px;
+  position: relative;
+  line-height: 1.5;
+  font-style: italic; 
+}
+
+.features-list li::before {
+  position: absolute;
+  left: 0.3px;
+  top:0;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.footer {
+  width: 100%;
+  margin-top: 30px;
+  background-color: #555;
+  color: #f0f0f0;
+  padding: 15px 10px;
+  border-top: 1px solid #ccc;
+  font-size: 14px;
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }

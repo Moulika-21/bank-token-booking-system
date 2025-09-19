@@ -1,10 +1,56 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.my-token {
+  position: relative;
+  min-height: 100vh;  
+  width: 100%;
+  overflow: hidden;
+  
+  justify-content: space-between;
+  padding: 0px 0px;
+  box-sizing: border-box;
+  background: transparent; 
+  z-index: 0; 
+  display: flex;
+  flex-direction: column;
+
+}
+.my-token::before{
+  content: "";
+  position:absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  opacity: 0.2;
+  z-index: -1;
+  background: url("../images/image.png") no-repeat center center fixed;
+  background-size: cover;
+  z-index: -1;
+  pointer-events: none;
+}
 .tokens-container {
   max-width: 900px;
+  width: 100%;
   margin: auto;
   padding: 20px;
-  background: #f3ebebd9;
+  background:#f5f9ff;
   border-radius: 12px;
   box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+  border: 2px solid rgba(0, 64, 128, 0.3); 
+  flex:1;
+ 
+  position: relative;
+  z-index: 1;
+  animation: screenDrop 1s ease-out forwards;
+  /* transform: translateY(-100vh); 
+  opacity: 0; */
+
+
 }
 
 .tokens-title {
@@ -120,4 +166,28 @@
 
 .tokens-table button:hover {
   background-color: #d62839;
+}
+
+.footer {
+  bottom: 0;
+  width: 100%;
+  margin-top: 0;
+  background-color: #555;
+  color: #f0f0f0;
+  padding: 15px 10px;
+  border-top: 1px solid #ccc;
+  font-size: 14px;
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+@keyframes screenDrop {
+  0% {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }

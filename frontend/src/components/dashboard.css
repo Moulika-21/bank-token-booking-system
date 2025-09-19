@@ -1,12 +1,29 @@
 /* dashboard.css */
 .dashboard-container {
   padding: 20px;
+  position: relative;
+  min-height: 100vh; 
+  background-image: url("../images/image.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #333;
+}
+
+.dashboard-container::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(255, 255, 255, 0.85); 
+  z-index: 0;
 }
 
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 40px;
+  position: relative; /* to appear above overlay */
+  z-index: 1;
 }
 
 .dashboard-section {
@@ -14,4 +31,10 @@
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+}
+.dashboard-header {
+  position: relative;
+  z-index: 1;
+  color: #333; /* or black */
+  margin-bottom: 20px;
 }

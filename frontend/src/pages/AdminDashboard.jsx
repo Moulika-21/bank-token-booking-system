@@ -7,6 +7,32 @@ import "../components/dashboard.css"
 
 const COLORS = ['#8884d8','#82ca9d','#ffc658','#ff8042'];
 
+const CustomTooltip = ({ active, payload }) => {
+  if (active && Array.isArray(payload) && payload.length > 0) {
+    const data = payload[0].payload;
+    return (
+      <div className="custom-tooltip bg-white p-2 border rounded shadow">
+        <p className="label font-semibold">Branch: {data.name}</p>
+        <p className="desc">Tokens: {data.count}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
+const CustomPieTooltip = ({ active, payload }) => {
+  if (active && Array.isArray(payload) && payload.length > 0) {
+    const data = payload[0].payload;
+    return (
+      <div className="custom-tooltip bg-white p-2 border rounded shadow">
+        <p className="label font-semibold">Service: {data.name}</p>
+        <p className="desc">Tokens: {data.count}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
 const AdminDashboard =() => {
     const [byBranch, setByBranch] = useState([])
     const [byService,setByService] = useState([]);
@@ -21,9 +47,18 @@ const AdminDashboard =() => {
                     axios.get('http://localhost:8083/api/tokens/count-by-branch'),
                     axios.get('http://localhost:8083/api/tokens/count-by-service'),
                 ]);
-                setByBranch(branchRes.data);
-                setByService(serviceRes.data);
+                
+                
+                setByBranch(branchRes.data.map(item => ({
+                ...item,
+                count: Math.round(item.count)
+                })));
+                setByService(serviceRes.data.map(item => ({
+                ...item,
+                count: Math.round(item.count)
+                })));
                 setLoading(false);
+
             } catch(err) {
                 console.error(err);
                 setError("Failed to fetch admin stats")
@@ -37,8 +72,11 @@ const AdminDashboard =() => {
     if(error) return <p style={{color: 'red'}}>{error}</p>;
 
     return (
+         <div className="dashboard-container p-6">
         <div className="p-6">
-            <h2 className="text-2xl font-bold mb-6">📊 Admin Token Summary</h2>
+            <div className="dashboard-header">
+                <h2 className="text-2xl font-bold mb-6">📊 Admin Token Summary</h2>
+            </div>
             <div className="dashboard-grid">
                 <div className="dashboard-section">
                     <div>
@@ -61,8 +99,8 @@ const AdminDashboard =() => {
                         </table>
                         <BarChart width={400} height={250} data={byBranch}>
                             <XAxis dataKey="branch" />
-                            <YAxis />
-                            <Tooltip />
+                            <YAxis allowDecimals={false} domain={[0, 'dataMax']} tickCount={6}/>
+                            <Tooltip content={<CustomTooltip />} />
                             <Legend />
                             <Bar dataKey="count" fill="#8884d8" />
                         </BarChart>
@@ -93,12 +131,13 @@ const AdminDashboard =() => {
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                         </Pie>
-                        <Tooltip />
+                        <Tooltip content={<CustomPieTooltip />} />
                         <Legend />
                     </PieChart>
                     </div>
                 </div>
             </div>
+        </div>
         </div>
     );
 };

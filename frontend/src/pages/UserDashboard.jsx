@@ -25,6 +25,7 @@ const UserDashboard = () =>{
     };
 
     return (
+        <>
         <div className='p-4'>
             <h2 className='text-2xl font-bold mb-4'>My Tokens</h2>
             
@@ -57,6 +58,10 @@ const UserDashboard = () =>{
                 </tbody>
             </table>   
         </div>
+        <footer className="footer">
+            &copy; {new Date().getFullYear()} Bank Token Booking System. All rights reserved.
+        </footer>
+        </>
     );
 };
 
