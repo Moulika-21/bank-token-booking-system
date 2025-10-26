@@ -4,6 +4,7 @@ import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +12,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.banktoken.dto.BranchServiceCountDTO;
 import com.banktoken.dto.SlotDTO;
@@ -22,6 +26,8 @@ import com.banktoken.repository.BranchRepository;
 import com.banktoken.repository.ServiceRepository;
 import com.banktoken.repository.TokenRepository;
 import com.banktoken.repository.UserRepository;
+
+import com.banktoken.exception.*;
 
 @Service
 public class TokenServiceImpl implements TokenService{
@@ -38,10 +44,17 @@ public class TokenServiceImpl implements TokenService{
 	@Autowired
 	private ServiceRepository serviceRepository;
 	
+	@Autowired
+	private EmailService emailService;
+	
 	public Token bookToken(TokenRequest request) {
-		Token token =new Token();
-		
 		LocalDate bookingDate = LocalDate.parse(request.getBookingDate());
+		 boolean exists = tokenRepository.existsByUserIdAndBookingDate(request.getUserId(),bookingDate);
+
+	     if (exists) {
+	    	 throw new TokenLimitExceededException("You can book only one token per day.");
+	     }
+		Token token =new Token();
 		
 		int nextTokenNumber = tokenRepository.getNextTokenNumberForDate(bookingDate);
 		token.setTokenNumber(nextTokenNumber);
@@ -68,6 +81,8 @@ public class TokenServiceImpl implements TokenService{
 		
 		token.setBranch(branchRepository.findById(request.getBranchId()).orElseThrow());
 		token.setService(serviceRepository.findById(request.getServiceId()).orElseThrow());
+		
+//		emailService.sendTokenConfirmation(request.getUserEmail(), String.valueOf(token.getId()));
 		
 		return tokenRepository.save(token);
 	}
@@ -140,6 +155,21 @@ public class TokenServiceImpl implements TokenService{
 	    return tokenRepository.countTokensByService();
 	}
 	
+	@Override
+	public List<BranchServiceCountDTO> getTokenCountByBranchForMonth(String month) {
+        YearMonth ym = YearMonth.parse(month); // e.g. "2025-09"
+        LocalDate start = ym.atDay(1);
+        LocalDate end = ym.atEndOfMonth();
+        return tokenRepository.countTokensByBranchInRange(start, end);
+    }
+	
+	@Override
+    public List<BranchServiceCountDTO> getTokenCountByServiceForMonth(String month) {
+        YearMonth ym = YearMonth.parse(month);
+        LocalDate start = ym.atDay(1);
+        LocalDate end = ym.atEndOfMonth();
+        return tokenRepository.countTokensByServiceInRange(start, end);
+    }
 	
 	@Override
 	public List<SlotDTO> getSlotsForDate(LocalDate date) {
@@ -189,5 +219,23 @@ public class TokenServiceImpl implements TokenService{
 	    tokenRepository.saveAll(tokens);
 //        tokenRepository.clearHistoryByUserId(userId);
     }
-
+	
+	@Override
+	public void checkAndExpireTokens() {
+		List<Token> tokens= tokenRepository.findByStatus(TokenStatus.BOOKED);
+		LocalDateTime now = LocalDateTime.now();
+		
+		for(Token token: tokens) {
+			if(token.getBookingTime().plusMinutes(30).isBefore(now)) {
+				token.setStatus(TokenStatus.EXPIRED);
+				tokenRepository.save(token);
+			}
+		}
+	}
+	
+	@Scheduled(fixedRate=3000000)
+	public void runExpiryTaks() {
+		checkAndExpireTokens();
+	}
 }
+

@@ -31,6 +31,8 @@ public interface TokenRepository extends JpaRepository<Token, Long>{
 	List<Token> findByBookingDateAndStatus(LocalDate bookingDate,TokenStatus status);
 	List<Token> findByBookingDate(LocalDate bookingDate);
 	
+	boolean existsByUserIdAndBookingDate(Long userId, LocalDate bookingDate);
+	
 	@Query("select count(t) from Token t where t.bookingDate = current_date")
 	Long countTokensToday();
 	
@@ -46,6 +48,18 @@ public interface TokenRepository extends JpaRepository<Token, Long>{
     @Query("SELECT new com.banktoken.dto.BranchServiceCountDTO(t.service.name, COUNT(t)) FROM Token t where t.bookingDate = current_date GROUP BY t.service.name")
     List<BranchServiceCountDTO> countTokensByService();
 	
+     @Query("SELECT new com.banktoken.dto.BranchServiceCountDTO(t.branch.name, COUNT(t)) " +
+            "FROM Token t WHERE t.bookingDate BETWEEN :startDate AND :endDate GROUP BY t.branch.name")
+     List<BranchServiceCountDTO> countTokensByBranchInRange(
+             @Param("startDate") LocalDate startDate,
+             @Param("endDate") LocalDate endDate);
+
+     @Query("SELECT new com.banktoken.dto.BranchServiceCountDTO(t.service.name, COUNT(t)) " +
+            "FROM Token t WHERE t.bookingDate BETWEEN :startDate AND :endDate GROUP BY t.service.name")
+     List<BranchServiceCountDTO> countTokensByServiceInRange(
+             @Param("startDate") LocalDate startDate,
+             @Param("endDate") LocalDate endDate);
+     
     List<Token> findByUserIdAndBookingTimeBetweenAndHiddenFalse(Long userId, LocalDateTime start, LocalDateTime end);
     
     @Query("SELECT COUNT(t) FROM Token t where t.bookingDate = current_date")
@@ -62,6 +76,9 @@ public interface TokenRepository extends JpaRepository<Token, Long>{
     
     @Query("SELECT COUNT(t) FROM Token t WHERE t.status = 'CANCELLED' and t.bookingDate = current_date")
     Long getCancelledTokens();
+    
+    @Query("SELECT COUNT(t) FROM Token t WHERE t.status = 'EXPIRED' and t.bookingDate = current_date")
+    Long getExpiredTokens();
     
     @Query("SELECT t.slotTime FROM Token t WHERE DATE(t.bookingTime) = :date AND t.status = com.banktoken.model.TokenStatus.BOOKED")
     List<String> findBookedSlotsByDate(@Param("date") LocalDate date);

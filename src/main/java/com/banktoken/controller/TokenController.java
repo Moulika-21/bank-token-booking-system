@@ -136,6 +136,7 @@ public class TokenController {
         summary.put("completedTokens", tokenRepository.getCompletedTokens());
         summary.put("processingTokens", tokenRepository.getProcessingTokens());
         summary.put("cancelledTokens", tokenRepository.getCancelledTokens());
+        summary.put("expiredTokens", tokenRepository.getExpiredTokens());
         
         return summary;
 	}
@@ -148,13 +149,19 @@ public class TokenController {
 	
 	@GetMapping("/count-by-branch")
 	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<List<BranchServiceCountDTO>> countByBranch() {
+	public ResponseEntity<List<BranchServiceCountDTO>> countByBranch(@RequestParam(required=false) String month) {
+		if(month!=null && !month.isEmpty()) {
+			return ResponseEntity.ok(tokenService.getTokenCountByBranchForMonth(month));
+		}
 	    return ResponseEntity.ok(tokenService.getTokenCountByBranch());
 	}
 
 	@GetMapping("/count-by-service")
 	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<List<BranchServiceCountDTO>> countByService() {
+	public ResponseEntity<List<BranchServiceCountDTO>> countByService(@RequestParam(required=false) String month) {
+		if (month != null && !month.isEmpty()) {
+            return ResponseEntity.ok(tokenService.getTokenCountByServiceForMonth(month));
+        }
 	    return ResponseEntity.ok(tokenService.getTokenCountByService());
 	}
 	

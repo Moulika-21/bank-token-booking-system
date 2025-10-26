@@ -26,10 +26,15 @@ public interface TokenService {
 	List<Token> filterTokens(Long branchId, Long serviceId, LocalDateTime startTime, LocalDateTime endTime);
 	List<BranchServiceCountDTO> getTokenCountByBranch();
     List<BranchServiceCountDTO> getTokenCountByService();
+    
+    List<BranchServiceCountDTO> getTokenCountByBranchForMonth(String month);
+    List<BranchServiceCountDTO> getTokenCountByServiceForMonth(String month);
 	
 	List<Token> getTodayTokens();
 	TokenSummaryDTO getTodayTokenSummary();
 	
 	void clearUserHistory(Long userId);
 	List<SlotDTO> getSlotsForDate(LocalDate date);
+	
+	void checkAndExpireTokens();
 }

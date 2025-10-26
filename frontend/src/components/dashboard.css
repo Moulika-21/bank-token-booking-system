@@ -22,7 +22,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 40px;
-  position: relative; /* to appear above overlay */
+  position: relative; 
   z-index: 1;
 }
 
@@ -37,4 +37,40 @@
   z-index: 1;
   color: #333; /* or black */
   margin-bottom: 20px;
+}
+
+.dashboard-content {
+  position: relative;
+  z-index: 1; /* ensures everything inside is above the overlay */
+}
+.download-buttons {
+  display: flex;
+  justify-content: center; /* center horizontally */
+  gap: 20px; /* space between buttons */
+  margin-top: 30px; /* space above buttons */
+}
+
+.download-button {
+  background: linear-gradient(135deg, #6b5b95, #b8a9c9); /* elegant purple gradient */
+  color: #fff;
+  padding: 12px 25px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.download-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  background: linear-gradient(135deg, #b8a9c9, #6b5b95);
+}
+
+@media (max-width: 730px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr; /* stack on small screens */
+  }
 }

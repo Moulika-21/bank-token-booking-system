@@ -4,5 +4,6 @@ public enum TokenStatus {
 	BOOKED,
 	IN_PROCESS,
 	SERVED,
-	CANCELLED
+	CANCELLED,
+	EXPIRED
 }

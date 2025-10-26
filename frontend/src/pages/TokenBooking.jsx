@@ -119,7 +119,7 @@ const TokenBooking = () => {
             <option value="">-- Select Branch --</option>
             {branches.map((branch) => (
               <option value={branch.id} key={branch.id}>
-                {branch.name}
+                {branch.name} ({branch.location}) 
               </option>
             ))}
           </select>
