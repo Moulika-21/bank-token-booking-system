@@ -7,14 +7,14 @@ The backend is designed with strong emphasis on data consistency, access control
 
 Mapping to Assignment Requirements:
 
-Assignment Requirement	                          Implementation in This Project
-User & Role Management	                 Implemented using User and Admin roles with JWT authentication
+Assignment Requirement	                                   Implementation in This Project
+User & Role Management	                       Implemented using User and Admin roles with JWT authentication
 Financial Records	                       Token bookings are treated as structured records with attributes like date, branch, and status
-Dashboard Summary APIs	                 Admin dashboard provides aggregated data such as total bookings, completed, pending, and cancelled tokens
-Access Control Logic	                   Role-based restrictions ensure only admins can update token status while users can only book/cancel
+Dashboard Summary APIs	                       Admin dashboard provides aggregated data such as total bookings, completed, pending, and cancelled tokens
+Access Control Logic	                       Role-based restrictions ensure only admins can update token status while users can only book/cancel
 Data Persistence	                       MySQL database used for storing users, tokens, slots, and OTP data
-Validation & Error Handling	             Includes OTP verification, input validation, and proper error responses
-Concurrency Handling	                   Pessimistic locking ensures that multiple users cannot book the same slot simultaneously
+Validation & Error Handling	               Includes OTP verification, input validation, and proper error responses
+Concurrency Handling	                       Pessimistic locking ensures that multiple users cannot book the same slot simultaneously
 
 ✨ Features
 👤 User Features
