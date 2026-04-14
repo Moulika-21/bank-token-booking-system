@@ -1,6 +1,7 @@
 package com.banktoken.service;
 
 import java.sql.Time;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -21,11 +22,15 @@ import com.banktoken.dto.BranchServiceCountDTO;
 import com.banktoken.dto.SlotDTO;
 import com.banktoken.dto.TokenRequest;
 import com.banktoken.dto.TokenSummaryDTO;
+import com.banktoken.model.BranchService;
 import com.banktoken.model.*;
+import com.banktoken.repository.BankRepository;
 import com.banktoken.repository.BranchRepository;
 import com.banktoken.repository.ServiceRepository;
 import com.banktoken.repository.TokenRepository;
 import com.banktoken.repository.UserRepository;
+
+import jakarta.transaction.Transactional;
 
 import com.banktoken.exception.*;
 
@@ -39,6 +44,9 @@ public class TokenServiceImpl implements TokenService{
 	private UserRepository userRepository;
 	
 	@Autowired
+	private BankRepository bankRepository;
+	
+	@Autowired
 	private BranchRepository branchRepository;
 	
 	@Autowired
@@ -47,6 +55,7 @@ public class TokenServiceImpl implements TokenService{
 	@Autowired
 	private EmailService emailService;
 	
+	@Transactional
 	public Token bookToken(TokenRequest request) {
 		LocalDate bookingDate = LocalDate.parse(request.getBookingDate());
 		 boolean exists = tokenRepository.existsByUserIdAndBookingDate(request.getUserId(),bookingDate);
@@ -54,9 +63,15 @@ public class TokenServiceImpl implements TokenService{
 	     if (exists) {
 	    	 throw new TokenLimitExceededException("You can book only one token per day.");
 	     }
+	     
+	     BranchService service = serviceRepository.findById(request.getServiceId())
+	             .orElseThrow(() -> new RuntimeException("Service not found"));
+	     
+	    int lastTokenNumber = tokenRepository.getNextTokenNumberForDateAndBranch(bookingDate, request.getBankId(), request.getBranchId(),request.getServiceId());
+	    
 		Token token =new Token();
 		
-		int nextTokenNumber = tokenRepository.getNextTokenNumberForDate(bookingDate);
+		int nextTokenNumber = lastTokenNumber + 1;
 		token.setTokenNumber(nextTokenNumber);
 		token.setStatus(TokenStatus.BOOKED);
 		token.setBookingTime(LocalDateTime.now());
@@ -68,24 +83,123 @@ public class TokenServiceImpl implements TokenService{
 	    }
 		
 		if (request.getSlotTime() != null) {
-//			String raw = request.getSlotTime(); 
-//			String timePart = raw.substring(raw.indexOf("(") + 1, raw.lastIndexOf(")"));
 	        token.setSlotTime(request.getSlotTime());
 	    } else {
 	        throw new RuntimeException("Slot time is required");
 	    }
-		token.setTransactionType(request.getTransactionType());
+		
+//		 BranchService service = serviceRepository.findById(request.getServiceId())
+//			        .orElseThrow(() -> new RuntimeException("Service not found with id " + request.getServiceId()));
+
+			    if (Boolean.TRUE.equals(service.getRequiresTransaction())) {
+			        // Case 1: Service requires transaction selection (Deposit / Withdraw)
+			        if (request.getTransactionType() == null) {
+			            throw new RuntimeException("Transaction type is required for this service");
+			        }
+			        token.setTransactionType(request.getTransactionType());
+			    } 
+			    else if (service.getPredefinedTransaction() != null) {
+			        // Case 2: Service has a predefined transaction type (like REQUEST / SERVICE)
+			        try {
+			            token.setTransactionType(TransactionType.valueOf(service.getPredefinedTransaction().toUpperCase()));
+			        } catch (IllegalArgumentException e) {
+			            // Fallback if predefined type doesn't match enum
+			            token.setTransactionType(TransactionType.SERVICE);
+			        }
+			    } 
+			    else {
+			        // Case 3: Default fallback
+			        token.setTransactionType(TransactionType.SERVICE);
+			    }
+		
+
 		
 		System.out.println("Booking token for userId: " + request.getUserId());
-		token.setUser(userRepository.findById(request.getUserId()).orElseThrow(() -> new RuntimeException("User not found with id " + request.getUserId())));
 		
+		token.setUser(userRepository.findById(request.getUserId()).orElseThrow(() -> new RuntimeException("User not found with id " + request.getUserId())));
+		token.setBank(bankRepository.findById(request.getBankId()).orElseThrow(() -> new RuntimeException("Bank not found with id " + request.getBankId())));
 		token.setBranch(branchRepository.findById(request.getBranchId()).orElseThrow());
 		token.setService(serviceRepository.findById(request.getServiceId()).orElseThrow());
 		
-//		emailService.sendTokenConfirmation(request.getUserEmail(), String.valueOf(token.getId()));
 		
 		return tokenRepository.save(token);
 	}
+	
+	@Override
+	public List<SlotDTO> getSlotsForDateAndService(LocalDate date, Long serviceId) {
+		
+		 if (date.getDayOfWeek() == DayOfWeek.SATURDAY ||
+			        date.getDayOfWeek() == DayOfWeek.SUNDAY) {
+			        return new ArrayList<>();
+		}
+
+	    BranchService service = serviceRepository.findById(serviceId)
+	            .orElseThrow(() -> new RuntimeException("Service not found"));
+
+	    int duration = service.getDurationMinutes();
+
+	    LocalTime start = LocalTime.of(9, 0);
+	    LocalTime end = LocalTime.of(17, 0);
+	    
+	    LocalTime lunchStart = LocalTime.of(13, 0);
+	    LocalTime lunchEnd = LocalTime.of(14,0 );
+
+	    // Short breaks
+	    LocalTime teaBreak1Start = LocalTime.of(11, 30);
+	    LocalTime teaBreak1End = LocalTime.of(11, 40);
+
+	    LocalTime teaBreak2Start = LocalTime.of(15, 30);
+	    LocalTime teaBreak2End = LocalTime.of(15, 40);
+	    LocalTime now = LocalTime.now();
+	    List<Token> bookedTokens =
+	            tokenRepository.findByBookingDateAndStatus(date, TokenStatus.BOOKED);
+
+	    List<SlotDTO> slots = new ArrayList<>();
+
+	    while (!start.plusMinutes(duration).isAfter(end)) {
+
+	        LocalTime slotEnd = start.plusMinutes(duration);
+
+	        // ❌ 2. Skip past time (only for today)
+	        if (date.equals(LocalDate.now()) && slotEnd.isBefore(now)) {
+	            start = slotEnd;
+	            continue;
+	        }
+
+	        // ❌ 3. Skip lunch overlap
+	        if (start.isBefore(lunchEnd) && slotEnd.isAfter(lunchStart)) {
+	            start = lunchEnd;
+	            continue;
+	        }
+
+	        // ❌ Skip tea break 1
+	        if (start.isBefore(teaBreak1End) && slotEnd.isAfter(teaBreak1Start)) {
+	            start = teaBreak1End;
+	            continue;
+	        }
+
+	        // ❌ Skip tea break 2
+	        if (start.isBefore(teaBreak2End) && slotEnd.isAfter(teaBreak2Start)) {
+	            start = teaBreak2End;
+	            continue;
+	        }
+
+	        String slot = start + " - " + slotEnd;
+
+	        boolean booked = bookedTokens.stream()
+	                .anyMatch(t ->
+	                        t.getService().getId().equals(serviceId) &&
+	                        t.getSlotTime().equals(slot)
+	                );
+
+	        slots.add(new SlotDTO(slot, booked));
+
+	        start = slotEnd;
+	    }
+
+	    return slots;
+	}
+
 	
 	private int generateTokenNumber() {
 		long count =tokenRepository.count();
@@ -120,55 +234,56 @@ public class TokenServiceImpl implements TokenService{
 		return tokenRepository.save(token);
 	}
 	
-	public List<Token> getTodayTokens() {
+	public List<Token> getTodayTokens(Long bankId) {
 	    LocalDate today = LocalDate.now();
-	    return tokenRepository.findByBookingDate(today);
+	    return tokenRepository.findByBookingDateAndBankId(today, bankId);
+//	    return tokenRepository.findByBookingDate(today);
 	}
 
 	
-	public TokenSummaryDTO getTodayTokenSummary() {
+	public TokenSummaryDTO getTodayTokenSummary(Long bankId) {
 		TokenSummaryDTO dto =new TokenSummaryDTO();
-		dto.setTotalTokensToday(tokenRepository.countTokensToday());
+		dto.setTotalTokensToday(tokenRepository.countTokensToday(bankId));
 		
 		Map<String, Long> branchMap =new HashMap<>();
-		for(Object[] row : tokenRepository.countTokensByBranchToday()) {
+		for(Object[] row : tokenRepository.countTokensByBranchToday(bankId)) {
 			branchMap.put((String) row[0], (Long) row[1]);
 		}
 		dto.setTokensByBranch(branchMap);
 		
 		Map<String, Long> serviceMap =new HashMap<>();
-		for(Object[] row : tokenRepository.countTokensByServiceToday()) {
+		for(Object[] row : tokenRepository.countTokensByServiceToday(bankId)) {
 			serviceMap.put((String) row[0], (Long) row[1]);
 		}
-		dto.setTokensByService(branchMap);
+		dto.setTokensByService(serviceMap);
 		
 		return dto;
 	}
 	
 	@Override
-	public List<BranchServiceCountDTO> getTokenCountByBranch() {
-	    return tokenRepository.countTokensByBranch();
+	public List<BranchServiceCountDTO> getTokenCountByBranch(Long bankId) {
+	    return tokenRepository.countTokensByBranch(bankId);
 	}
 
 	@Override
-	public List<BranchServiceCountDTO> getTokenCountByService() {
-	    return tokenRepository.countTokensByService();
+	public List<BranchServiceCountDTO> getTokenCountByService(Long bankId) {
+	    return tokenRepository.countTokensByService(bankId);
 	}
 	
 	@Override
-	public List<BranchServiceCountDTO> getTokenCountByBranchForMonth(String month) {
+	public List<BranchServiceCountDTO> getTokenCountByBranchForMonth(String month,Long bankId) {
         YearMonth ym = YearMonth.parse(month); // e.g. "2025-09"
         LocalDate start = ym.atDay(1);
         LocalDate end = ym.atEndOfMonth();
-        return tokenRepository.countTokensByBranchInRange(start, end);
+        return tokenRepository.countTokensByBranchInRange(start, end,bankId);
     }
 	
 	@Override
-    public List<BranchServiceCountDTO> getTokenCountByServiceForMonth(String month) {
+    public List<BranchServiceCountDTO> getTokenCountByServiceForMonth(String month,Long bankId) {
         YearMonth ym = YearMonth.parse(month);
         LocalDate start = ym.atDay(1);
         LocalDate end = ym.atEndOfMonth();
-        return tokenRepository.countTokensByServiceInRange(start, end);
+        return tokenRepository.countTokensByServiceInRange(start, end,bankId);
     }
 	
 	@Override

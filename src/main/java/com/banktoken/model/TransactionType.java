@@ -2,5 +2,8 @@ package com.banktoken.model;
 
 public enum TransactionType {
 	DEPOSIT,
-	WITHDRAW
+	WITHDRAW,
+	REQUEST,
+	SERVICE,
+	LOAN_PAYMENT
 }

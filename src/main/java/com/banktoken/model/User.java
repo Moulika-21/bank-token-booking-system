@@ -17,6 +17,10 @@ public class User {
 	
 	private String name;
 	
+	@ManyToOne
+	@JoinColumn(name = "bank_id")
+	private Bank bank;
+
 	@Column(unique = true, nullable= false)
 	private String email;
 	
@@ -25,7 +29,9 @@ public class User {
 	@Enumerated(EnumType.STRING)
 	private Role role;
 	
+	@Column(unique = true, nullable= false)
 	private String accountNumber;
+	
 	private String phoneNumber;
 	
 	@ManyToOne
@@ -38,6 +44,14 @@ public class User {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public Bank getBank() {
+		return bank;
+	}
+
+	public void setBank(Bank bank) {
+		this.bank = bank;
 	}
 
 	public String getName() {

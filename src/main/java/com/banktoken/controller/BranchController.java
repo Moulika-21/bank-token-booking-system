@@ -3,7 +3,9 @@ package com.banktoken.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,5 +25,11 @@ public class BranchController {
     	List<Branch> branches = branchService.getAllBranches();
         branches.forEach(b -> System.out.println("Branch: id=" + b.getId() + ", name=" + b.getName()));
         return branches;
+    }
+    
+    @GetMapping("/bank/{bankId}")
+    public ResponseEntity<List<Branch>> getBranchesByBank(@PathVariable Long bankId) {
+        List<Branch> branches = branchService.findByBankId(bankId);
+        return ResponseEntity.ok(branches);
     }
 }

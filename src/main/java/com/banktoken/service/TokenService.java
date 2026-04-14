@@ -24,17 +24,19 @@ public interface TokenService {
 	Optional<Token> findById(Long id);
 	
 	List<Token> filterTokens(Long branchId, Long serviceId, LocalDateTime startTime, LocalDateTime endTime);
-	List<BranchServiceCountDTO> getTokenCountByBranch();
-    List<BranchServiceCountDTO> getTokenCountByService();
+	List<BranchServiceCountDTO> getTokenCountByBranch(Long bankId);
+    List<BranchServiceCountDTO> getTokenCountByService(Long bankId);
     
-    List<BranchServiceCountDTO> getTokenCountByBranchForMonth(String month);
-    List<BranchServiceCountDTO> getTokenCountByServiceForMonth(String month);
+    List<BranchServiceCountDTO> getTokenCountByBranchForMonth(String month,Long bankId);
+    List<BranchServiceCountDTO> getTokenCountByServiceForMonth(String month,Long bankId);
 	
-	List<Token> getTodayTokens();
-	TokenSummaryDTO getTodayTokenSummary();
+	List<Token> getTodayTokens(Long bankId);
+	TokenSummaryDTO getTodayTokenSummary(Long bankId);
 	
 	void clearUserHistory(Long userId);
 	List<SlotDTO> getSlotsForDate(LocalDate date);
+	
+	List<SlotDTO> getSlotsForDateAndService(LocalDate localDate,Long serviceId);
 	
 	void checkAndExpireTokens();
 }

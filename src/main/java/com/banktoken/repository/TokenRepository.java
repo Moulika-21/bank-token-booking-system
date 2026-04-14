@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 import com.banktoken.dto.BranchServiceCountDTO;
 import com.banktoken.model.*;
 
+import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 
 public interface TokenRepository extends JpaRepository<Token, Long>{
@@ -33,58 +35,63 @@ public interface TokenRepository extends JpaRepository<Token, Long>{
 	
 	boolean existsByUserIdAndBookingDate(Long userId, LocalDate bookingDate);
 	
-	@Query("select count(t) from Token t where t.bookingDate = current_date")
-	Long countTokensToday();
+	@Query("select count(t) from Token t where  t.bank.id = :bankId and t.bookingDate = current_date")
+	Long countTokensToday(@Param("bankId") Long bankId);
 	
-	@Query("select t.branch.name, count(t) from Token t where t.bookingDate = current_date group by t.branch.name")
-	List<Object[]> countTokensByBranchToday();
+	@Query("select t.branch.name, count(t) from Token t where  t.bank.id = :bankId and t.bookingDate = current_date group by t.branch.name")
+	List<Object[]> countTokensByBranchToday(@Param("bankId") Long bankId);
 	
-	@Query("select t.service.name, count(t) from Token t where t.bookingDate = current_date group by t.service.name")
-	List<Object[]> countTokensByServiceToday();
+	@Query("select t.service.name, count(t) from Token t where  t.bank.id = :bankId and t.bookingDate = current_date group by t.service.name")
+	List<Object[]> countTokensByServiceToday(@Param("bankId") Long bankId);
 	
-	@Query("SELECT new com.banktoken.dto.BranchServiceCountDTO(t.branch.name, COUNT(t)) FROM Token t where t.bookingDate = current_date GROUP BY t.branch.name")
-    List<BranchServiceCountDTO> countTokensByBranch();
+	@Query("SELECT new com.banktoken.dto.BranchServiceCountDTO(t.bank.name,t.branch.name,null, COUNT(t)) FROM Token t WHERE t.bank.id = :bankId and t.bookingDate = current_date GROUP BY t.bank.name,t.branch.name")
+    List<BranchServiceCountDTO> countTokensByBranch(@Param("bankId") Long bankId);
 
-    @Query("SELECT new com.banktoken.dto.BranchServiceCountDTO(t.service.name, COUNT(t)) FROM Token t where t.bookingDate = current_date GROUP BY t.service.name")
-    List<BranchServiceCountDTO> countTokensByService();
+    @Query("SELECT new com.banktoken.dto.BranchServiceCountDTO(t.bank.name,t.branch.name,t.service.name, COUNT(t)) FROM Token t where t.bank.id = :bankId and t.bookingDate = current_date GROUP BY t.bank.name, t.branch.name,t.service.name")
+    List<BranchServiceCountDTO> countTokensByService(@Param("bankId") Long bankId);
 	
-     @Query("SELECT new com.banktoken.dto.BranchServiceCountDTO(t.branch.name, COUNT(t)) " +
-            "FROM Token t WHERE t.bookingDate BETWEEN :startDate AND :endDate GROUP BY t.branch.name")
+     @Query("SELECT new com.banktoken.dto.BranchServiceCountDTO(t.bank.name,t.branch.name,null, COUNT(t)) " +
+            "FROM Token t WHERE t.bank.id = :bankId and t.bookingDate BETWEEN :startDate AND :endDate GROUP BY t.bank.name,t.branch.name")
      List<BranchServiceCountDTO> countTokensByBranchInRange(
              @Param("startDate") LocalDate startDate,
-             @Param("endDate") LocalDate endDate);
-
-     @Query("SELECT new com.banktoken.dto.BranchServiceCountDTO(t.service.name, COUNT(t)) " +
-            "FROM Token t WHERE t.bookingDate BETWEEN :startDate AND :endDate GROUP BY t.service.name")
+             @Param("endDate") LocalDate endDate,@Param("bankId") Long bankId);
+     
+     List<Token> findByBookingDateAndBankId(LocalDate date, Long bankId);
+     @Query("SELECT new com.banktoken.dto.BranchServiceCountDTO(t.bank.name,t.branch.name,t.service.name, COUNT(t)) " +
+            "FROM Token t WHERE t.bank.id = :bankId and t.bookingDate BETWEEN :startDate AND :endDate GROUP BY t.bank.name,t.branch.name,t.service.name")
      List<BranchServiceCountDTO> countTokensByServiceInRange(
              @Param("startDate") LocalDate startDate,
-             @Param("endDate") LocalDate endDate);
+             @Param("endDate") LocalDate endDate,@Param("bankId") Long bankId);
      
     List<Token> findByUserIdAndBookingTimeBetweenAndHiddenFalse(Long userId, LocalDateTime start, LocalDateTime end);
     
-    @Query("SELECT COUNT(t) FROM Token t where t.bookingDate = current_date")
-    Long getTotalTokens();
+    @Query("SELECT COUNT(t) FROM Token t where t.bank.id = :bankId and t.bookingDate = current_date")
+    Long getTotalTokensByBank(@Param("bankId") Long bankId);
 
-    @Query("SELECT COUNT(t) FROM Token t WHERE t.status = 'BOOKED' and t.bookingDate = current_date")
-    Long getBookedTokens();
+    @Query("SELECT COUNT(t) FROM Token t WHERE t.bank.id = :bankId and t.status = 'BOOKED' and t.bookingDate = current_date")
+    Long getBookedTokensByBank(@Param("bankId") Long bankId);
 
-    @Query("SELECT COUNT(t) FROM Token t WHERE t.status = 'SERVED' and t.bookingDate = current_date")
-    Long getCompletedTokens();
+    @Query("SELECT COUNT(t) FROM Token t WHERE t.bank.id = :bankId and t.status = 'SERVED' and t.bookingDate = current_date")
+    Long getCompletedTokensByBank(@Param("bankId") Long bankId);
     
-    @Query("SELECT COUNT(t) FROM Token t WHERE t.status = 'IN_PROCESS' and t.bookingDate = current_date")
-    Long getProcessingTokens();
+    @Query("SELECT COUNT(t) FROM Token t WHERE t.bank.id = :bankId and t.status = 'IN_PROCESS' and t.bookingDate = current_date")
+    Long getProcessingTokensByBank(@Param("bankId") Long bankId);
     
-    @Query("SELECT COUNT(t) FROM Token t WHERE t.status = 'CANCELLED' and t.bookingDate = current_date")
-    Long getCancelledTokens();
+    @Query("SELECT COUNT(t) FROM Token t WHERE t.bank.id = :bankId and t.status = 'CANCELLED' and t.bookingDate = current_date")
+    Long getCancelledTokensByBank(@Param("bankId") Long bankId);
     
-    @Query("SELECT COUNT(t) FROM Token t WHERE t.status = 'EXPIRED' and t.bookingDate = current_date")
-    Long getExpiredTokens();
+    @Query("SELECT COUNT(t) FROM Token t WHERE t.bank.id = :bankId and t.status = 'EXPIRED' and t.bookingDate = current_date")
+    Long getExpiredTokensByBank(@Param("bankId") Long bankId);
     
     @Query("SELECT t.slotTime FROM Token t WHERE DATE(t.bookingTime) = :date AND t.status = com.banktoken.model.TokenStatus.BOOKED")
     List<String> findBookedSlotsByDate(@Param("date") LocalDate date);
     
-    @Query("SELECT COALESCE(MAX(t.tokenNumber), 0) + 1 FROM Token t WHERE t.bookingDate = :date")
-    int getNextTokenNumberForDate(@Param("date") LocalDate date);
+//    @Query("SELECT COALESCE(MAX(t.tokenNumber), 0) + 1 FROM Token t WHERE t.bookingDate = :date")
+//    int getNextTokenNumberForDate(@Param("date") LocalDate date);
+    
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT COALESCE(MAX(t.tokenNumber), 0) FROM Token t WHERE t.bookingDate = :date AND t.bank.id = :bankId AND t.branch.id = :branchId AND t.service.id = :serviceId")
+    int getNextTokenNumberForDateAndBranch(@Param("date") LocalDate date, @Param("bankId") Long bankId, @Param("branchId") Long branchId,@Param("serviceId") Long serviceId);
 
 
     @Modifying

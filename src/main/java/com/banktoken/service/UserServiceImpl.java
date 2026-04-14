@@ -7,11 +7,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+
 import com.banktoken.model.User;
 import com.banktoken.repository.UserRepository;
 
+
+
 @Service
 public class UserServiceImpl implements UserService{
+	
 	
 	@Autowired
 	private UserRepository userRepository;
@@ -36,6 +40,11 @@ public class UserServiceImpl implements UserService{
 	}
 	
 	@Override
+	public Optional<User> findByAccountNumberAndBranchId(String accountNumber, Long branchId) {
+        return userRepository.findByAccountNumberAndBranchId(accountNumber, branchId);
+    }
+	
+	@Override
 	public User updateUserProfile(String email, User updatedUser) {
 		Optional<User> existingUserOpt = userRepository.findByEmail(email);
 		if(existingUserOpt.isPresent()) {
@@ -51,5 +60,11 @@ public class UserServiceImpl implements UserService{
 		return null;
 	}
 	
+	@Override
+	public Optional<User> findByAccountNumber(String accountNumber) {
+	    return userRepository.findByAccountNumber(accountNumber);
+	}
+	
+	 
 	
 }

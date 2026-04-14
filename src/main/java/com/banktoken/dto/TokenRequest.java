@@ -11,6 +11,7 @@ import lombok.Setter;
 @Setter
 public class TokenRequest {
 	
+	private Long bankId;
 	private Long userId;
 	private Long branchId;
 	private Long serviceId;
@@ -55,6 +56,12 @@ public class TokenRequest {
 	}
 	public void setSlotTime(String bookingTime) {
 		this.slotTime = bookingTime;
+	}
+	public Long getBankId() {
+	    return bankId;
+	}
+	public void setBankId(Long bankId) {
+	    this.bankId = bankId;
 	}
 	
 }

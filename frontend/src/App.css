@@ -1,3 +1,55 @@
+
+body, html {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+  font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+}
+
+.main-bg {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  width: 100%;
+  background: linear-gradient(90deg, #2575fc 40%, #6a11cb 100%);
+  padding: 0 0 15px 0;
+  box-shadow: 0 4px 18px #0002;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 35px;
+}
+
+.main-content > * {
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  /* Optional: Add card effect to main page containers */
+  padding: 32px;
+  background: rgba(255,255,255,0.93);
+  border-radius: 15px;
+  box-shadow: 0 3px 24px #2575fc12;
+}
+
+.footer {
+  text-align: center;
+  padding: 17px 10px;
+  color: #5b728f;
+  background: linear-gradient(90deg, #c9dae6 40%, #fcfcfc 100%);
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  margin-top: auto;
+  border-top: 1.5px solid #2575fc35;
+}
+
 .App {
   text-align: center;
 }
@@ -36,3 +88,4 @@
     transform: rotate(360deg);
   }
 }
+

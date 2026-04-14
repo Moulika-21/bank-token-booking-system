@@ -38,12 +38,15 @@ import com.banktoken.service.UserService;
 //import io.jsonwebtoken.lang.Collections;
 
 import com.banktoken.service.EmailService;
+
 import com.banktoken.service.TokenService;
 
 
 @RestController
 @RequestMapping("/api/tokens")
 public class TokenController {
+	
+	
 	
 	@Autowired 
 	private TokenService tokenService;
@@ -56,6 +59,8 @@ public class TokenController {
 	
 	@Autowired
 	private EmailService emailService;
+	
+	private Map<Long, String> otpStore = new HashMap<>();
 
 	//to book a token
 	@PostMapping("/book")
@@ -66,7 +71,8 @@ public class TokenController {
 
 		String userEmail = user.getEmail();
 		String subject = "Token Booking confirmation";
-		String body ="Hi " + user.getName() + ",\n\nYour token has been booked successfully!\n\nToken ID:"+ token.getTokenNumber();
+		String body ="Hi " + user.getName() + ",\n\nYour token has been booked successfully!\n\nToken ID:"+ token.getTokenNumber() + "\nSlot: " +
+		 token.getSlotTime() + "\nLocation: " +  token.getBranch() +"\nPlease arrive at least 10 minutes before your slot time to ensure smooth service.\n\nThank you!";
 		
 		try {
 			emailService.sendBookingEmail(userEmail, subject, body);
@@ -127,49 +133,106 @@ public class TokenController {
 	}
 	
 	//to get summary of todays token
+//	@GetMapping("/summary/today")
+//	public Map<String, Long> getTodaySummary(){
+////		return ResponseEntity.ok(tokenService.getTodayTokenSummary());
+//		Map<String, Long> summary = new HashMap<>();
+//        summary.put("totalTokens", tokenRepository.getTotalTokens());
+//        summary.put("bookedTokens", tokenRepository.getBookedTokens());
+//        summary.put("completedTokens", tokenRepository.getCompletedTokens());
+//        summary.put("processingTokens", tokenRepository.getProcessingTokens());
+//        summary.put("cancelledTokens", tokenRepository.getCancelledTokens());
+//        summary.put("expiredTokens", tokenRepository.getExpiredTokens());
+//        
+//        return summary;
+//	}
 	@GetMapping("/summary/today")
-	public Map<String, Long> getTodaySummary(){
-//		return ResponseEntity.ok(tokenService.getTodayTokenSummary());
-		Map<String, Long> summary = new HashMap<>();
-        summary.put("totalTokens", tokenRepository.getTotalTokens());
-        summary.put("bookedTokens", tokenRepository.getBookedTokens());
-        summary.put("completedTokens", tokenRepository.getCompletedTokens());
-        summary.put("processingTokens", tokenRepository.getProcessingTokens());
-        summary.put("cancelledTokens", tokenRepository.getCancelledTokens());
-        summary.put("expiredTokens", tokenRepository.getExpiredTokens());
-        
-        return summary;
+	public Map<String, Long> getTodaySummary(org.springframework.security.core.Authentication authentication) {
+
+	    User user = userService.findByEmail(authentication.getName()).orElseThrow();
+	    Long bankId = user.getBank().getId();
+
+	    Map<String, Long> summary = new HashMap<>();
+
+	    summary.put("totalTokens", tokenRepository.getTotalTokensByBank(bankId));
+	    summary.put("bookedTokens", tokenRepository.getBookedTokensByBank(bankId));
+	    summary.put("completedTokens", tokenRepository.getCompletedTokensByBank(bankId));
+	    summary.put("processingTokens", tokenRepository.getProcessingTokensByBank(bankId));
+	    summary.put("cancelledTokens", tokenRepository.getCancelledTokensByBank(bankId));
+	    summary.put("expiredTokens", tokenRepository.getExpiredTokensByBank(bankId));
+
+	    return summary;
 	}
 	
+	
+//	@GetMapping("/today")
+//	@PreAuthorize("hasRole('ADMIN')")
+//	public List<Token> getTodayTokens() {
+//	    return tokenService.getTodayTokens(); 
+//	}
 	@GetMapping("/today")
 	@PreAuthorize("hasRole('ADMIN')")
-	public List<Token> getTodayTokens() {
-	    return tokenService.getTodayTokens(); 
+	public List<Token> getTodayTokens(org.springframework.security.core.Authentication authentication) {
+
+	    User user = userService.findByEmail(authentication.getName()).orElseThrow();
+	    Long bankId = user.getBank().getId();
+
+	    return tokenService.getTodayTokens(bankId); // ✅ FIXED
 	}
 	
+//	@GetMapping("/count-by-branch")
+//	@PreAuthorize("hasRole('ADMIN')")
+//	public ResponseEntity<List<BranchServiceCountDTO>> countByBranch(@RequestParam(required=false) String month) {
+//		if(month!=null && !month.isEmpty()) {
+//			return ResponseEntity.ok(tokenService.getTokenCountByBranchForMonth(month));
+//		}
+//	    return ResponseEntity.ok(tokenService.getTokenCountByBranch());
+//	}
 	@GetMapping("/count-by-branch")
 	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<List<BranchServiceCountDTO>> countByBranch(@RequestParam(required=false) String month) {
-		if(month!=null && !month.isEmpty()) {
-			return ResponseEntity.ok(tokenService.getTokenCountByBranchForMonth(month));
-		}
-	    return ResponseEntity.ok(tokenService.getTokenCountByBranch());
+	public ResponseEntity<List<BranchServiceCountDTO>> countByBranch(
+	        @RequestParam(required = false) String month,
+	        org.springframework.security.core.Authentication authentication) {
+
+	    User user = userService.findByEmail(authentication.getName()).orElseThrow();
+	    Long bankId = user.getBank().getId();
+
+	    if (month != null && !month.isEmpty()) {
+	        return ResponseEntity.ok(tokenService.getTokenCountByBranchForMonth(month, bankId));
+	    }
+
+	    return ResponseEntity.ok(tokenService.getTokenCountByBranch(bankId));
 	}
 
+//	@GetMapping("/count-by-service")
+//	@PreAuthorize("hasRole('ADMIN')")
+//	public ResponseEntity<List<BranchServiceCountDTO>> countByService(@RequestParam(required=false) String month) {
+//		if (month != null && !month.isEmpty()) {
+//            return ResponseEntity.ok(tokenService.getTokenCountByServiceForMonth(month));
+//        }
+//	    return ResponseEntity.ok(tokenService.getTokenCountByService());
+//	}
+//	
 	@GetMapping("/count-by-service")
 	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<List<BranchServiceCountDTO>> countByService(@RequestParam(required=false) String month) {
-		if (month != null && !month.isEmpty()) {
-            return ResponseEntity.ok(tokenService.getTokenCountByServiceForMonth(month));
-        }
-	    return ResponseEntity.ok(tokenService.getTokenCountByService());
+	public ResponseEntity<List<BranchServiceCountDTO>> countByService(
+	        @RequestParam(required = false) String month,
+	        org.springframework.security.core.Authentication authentication) {
+
+	    User user = userService.findByEmail(authentication.getName()).orElseThrow();
+	    Long bankId = user.getBank().getId();
+
+	    if (month != null && !month.isEmpty()) {
+	        return ResponseEntity.ok(tokenService.getTokenCountByServiceForMonth(month, bankId));
+	    }
+
+	    return ResponseEntity.ok(tokenService.getTokenCountByService(bankId));
 	}
 	
-	
 	@GetMapping("/slots")
-    public ResponseEntity<List<SlotDTO>> getSlots(@RequestParam String date) {
+    public ResponseEntity<List<SlotDTO>> getSlots(@RequestParam String date,@RequestParam Long serviceId) {
         LocalDate localDate = LocalDate.parse(date);
-        List<SlotDTO> slots = tokenService.getSlotsForDate(localDate);
+        List<SlotDTO> slots = tokenService.getSlotsForDateAndService(localDate, serviceId);
         return ResponseEntity.ok(slots);
     }
 	
@@ -200,6 +263,52 @@ public class TokenController {
 	}
 
 	
-	
+	 @PostMapping("/send-otp")
+	 public ResponseEntity<String> sendOtp(@RequestParam Long userId) {
+	        User user = userService.findById(userId)
+	                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+	        String otp = String.valueOf(100000 + new Random().nextInt(900000)); // 6-digit OTP
+	        otpStore.put(userId, otp);
+
+	        String subject = "Token Booking OTP Verification";
+	        String body = "Hi " + user.getName() + ",\n\nYour OTP for token booking is: " + otp + "\n\nThis OTP is valid for 5 minutes.";
+
+	        emailService.sendBookingEmail(user.getEmail(), subject, body);
+
+	        return ResponseEntity.ok("OTP sent successfully to " + user.getEmail());
+	    }
+	    @PostMapping("/verify-otp")
+	    public ResponseEntity<?> verifyOtp(@RequestParam Long userId, @RequestParam String otp, @RequestBody TokenRequest request) {
+	        String savedOtp = otpStore.get(userId);
+
+	        if (savedOtp == null) {
+	            return ResponseEntity.badRequest().body("OTP not generated. Please request a new one.");
+	        }
+
+	        if (!savedOtp.equals(otp)) {
+	            return ResponseEntity.badRequest().body("Invalid OTP. Please try again.");
+	        }
+
+	        // OTP verified → remove from store
+	        otpStore.remove(userId);
+
+	        // Proceed to book the token
+	        Token token = tokenService.bookToken(request);
+
+	        // Send booking confirmation email
+	        User user = userService.findById(request.getUserId())
+	                .orElseThrow(() -> new RuntimeException("User not found with id: " + request.getUserId()));
+	        String subject = "Token Booking Confirmation";
+	        String body = "Hi " + user.getName() + ",\n\nYour token has been booked successfully!\n\nToken ID: " + token.getTokenNumber();
+
+	        try {
+	            emailService.sendBookingEmail(user.getEmail(), subject, body);
+	        } catch (Exception e) {
+	            System.out.println("Email sending failed: " + e.getMessage());
+	        }
+
+	        return ResponseEntity.ok(token);
+	    }
 		
 }

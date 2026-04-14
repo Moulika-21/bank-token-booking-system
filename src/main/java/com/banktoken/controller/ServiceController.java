@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,4 +27,18 @@ public class ServiceController {
         services.forEach(b -> System.out.println("Branch: id=" + b.getId() + ", name=" + b.getName()));
         return ResponseEntity.ok(services);
     }
+    
+    @GetMapping("/branch/{branchId}")
+    public ResponseEntity<List<BranchService>> getServicesByBranch(@PathVariable Long branchId) {
+    	System.out.println(">>> Fetching services for branchId: " + branchId);
+        List<BranchService> services = serviceService.getServicesByBranchId(branchId);
+        System.out.println(">>> Found " + services.size() + " services for branchId: " + branchId);
+        services.forEach(s -> System.out.println(
+                "Service: " + s.getName() +
+                " | requiresTransaction: " + s.getRequiresTransaction() +
+                " | predefinedTransaction: " + s.getPredefinedTransaction()
+            ));
+        return ResponseEntity.ok(services);
+    }
+
 }

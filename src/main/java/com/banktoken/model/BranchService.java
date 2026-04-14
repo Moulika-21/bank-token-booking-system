@@ -17,9 +17,39 @@ public class BranchService {
 	
 	private String name;
 	
+	private int durationMinutes;
+	
 	@ManyToOne
 	@JoinColumn(name = "branch_id")
 	private Branch branch;
+	
+	public int getDurationMinutes() {
+		return durationMinutes;
+	}
+
+	public void setDurationMinutes(int durationMinutes) {
+		this.durationMinutes = durationMinutes;
+	}
+
+	public Boolean getRequiresTransaction() {
+		return requiresTransaction;
+	}
+
+	public void setRequiresTransaction(Boolean requiresTransaction) {
+		this.requiresTransaction = requiresTransaction;
+	}
+
+	public String getPredefinedTransaction() {
+		return predefinedTransaction;
+	}
+
+	public void setPredefinedTransaction(String predefinedTransaction) {
+		this.predefinedTransaction = predefinedTransaction;
+	}
+
+	private Boolean requiresTransaction;
+	private String predefinedTransaction;
+
 
 	public Long getId() {
 		return id;

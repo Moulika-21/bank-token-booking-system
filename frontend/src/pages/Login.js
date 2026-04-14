@@ -1,9 +1,12 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext";
 import "../components/Login.css"; // New CSS file
 
+
 const Login = () => {
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -13,27 +16,47 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const res = await axios.post("http://localhost:8083/api/users/login", {
+      const res = await api.post("/users/login", {
         email,
         password,
-      });
+      }, { withCredentials: true });
 
-      const token = res.data;
-      localStorage.setItem("token", token);
-      localStorage.setItem("userId", String(res.data.userId));
+      const accessToken = res.data.accessToken || res.data.token || res.data.access;
+      const userId = res.data.userId;
+      const role = res.data.role;
 
-      const userRes = await axios.get(
-        `http://localhost:8083/api/users/id/${res.data.userId}`
-      );
-      localStorage.setItem("role", userRes.data.role);
+      const user = { id: userId, role, email };
+      login({ accessToken, user });
+
+      window._ACCESS_TOKEN = accessToken;
+      // localStorage.setItem("isLoggedIn", "true");   // <-- quick flag
+      // localStorage.setItem("userId", String(userId)); // optional
+      // localStorage.setItem("role", String(role));
+
+      // if (token) {
+      //   localStorage.setItem("token", token);
+      //   localStorage.setItem("userId", String(userId));
+      //   localStorage.setItem("role", String(role));
+      // }
+      // const userRes = await axios.get(
+      //   `http://localhost:8083/api/users/id/${res.data.userId}`
+      // );
+      // localStorage.setItem("role", userRes.data.role);
 
       setMessage("Login successful ✅");
-      navigate("/");
+      // navigate("/");
+      setTimeout(() => {
+        navigate("/");
+      }, 0);
+
+      // window.location.reload();
     } catch (err) {
+      console.log("FULL ERROR:", err);
+      console.log("RESPONSE:", err.response);
       if (err.response && err.response.status === 401) {
         setMessage("Invalid email or password ❌");
       } else {
-        setMessage("Login failed. Please try again ⚠️");
+        setMessage("Login failed. Please try again ⚠️", err);
       }
     }
   };
@@ -41,7 +64,7 @@ const Login = () => {
   return (
     <div className="login-wrapper">
       <div className="login-card">
-        <h2>🔐 Login</h2>
+        <h2> Login</h2>
         <form onSubmit={handleLogin}>
           <input
             type="email"
@@ -52,7 +75,7 @@ const Login = () => {
           />
           <input
             type="password"
-            placeholder="🔑 Password"
+            placeholder=" Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required

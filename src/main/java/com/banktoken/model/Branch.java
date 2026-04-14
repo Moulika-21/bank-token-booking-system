@@ -15,6 +15,10 @@ public class Branch {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
+	@ManyToOne
+	@JoinColumn(name = "bank_id")
+	private Bank bank;
+	
 	public Long getId() {
 		return id;
 	}

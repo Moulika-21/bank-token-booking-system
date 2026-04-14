@@ -1,11 +1,15 @@
 package com.banktoken.dto;
 
 public class BranchServiceCountDTO {
+	 private String bankName;
+	 private String branchName;
 	private String name;
 	private long count;
 	
-	public BranchServiceCountDTO(String name, long count) {
+	public BranchServiceCountDTO(String bankName,String branchName,String name, long count) {
 		this.name=name;
+		this.bankName=bankName;
+		this.branchName=branchName;
 		this.count=count;
 	}
 
@@ -19,6 +23,22 @@ public class BranchServiceCountDTO {
 
 	public long getCount() {
 		return count;
+	}
+
+	public String getBankName() {
+		return bankName;
+	}
+
+	public void setBankName(String bankName) {
+		this.bankName = bankName;
+	}
+
+	public String getBranchName() {
+		return branchName;
+	}
+
+	public void setBranchName(String branchName) {
+		this.branchName = branchName;
 	}
 
 	public BranchServiceCountDTO() {

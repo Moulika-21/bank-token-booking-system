@@ -50,6 +50,10 @@ public class Token {
 	@JoinColumn(name = "service_id")
 	private BranchService service;
 	
+	@ManyToOne
+	@JoinColumn(name = "bank_id")
+	private Bank bank;
+
 	public boolean isHidden() {
 		return hidden;
 	}
@@ -128,6 +132,14 @@ public class Token {
 
 	public void setBranch(Branch branch) {
 		this.branch = branch;
+	}
+
+	public Bank getBank() {
+		return bank;
+	}
+
+	public void setBank(Bank bank) {
+		this.bank = bank;
 	}
 
 	public BranchService getService() {

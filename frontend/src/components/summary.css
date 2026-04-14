@@ -55,8 +55,11 @@
 }
 .filter-controls input,
 .filter-controls .react-datepicker-wrapper {
-  flex: 1;
-  min-width: 160px;
+  flex: 0;
+  min-width: auto;
+}
+.react-datepicker-wrapper {
+  width: auto !important;
 }
 .filter-btn {
   background: #6c63ff;
@@ -77,13 +80,61 @@
   font-size: 1.4rem;
 }
 
-.table-wrapper {
+/* .table-wrapper {
   width: 100%;
   overflow-x: auto;
   margin-top: 1rem;
+} */
+/* Table styling */
+.table-wrapper {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.token-table {
+.table-wrapper th,
+.table-wrapper td {
+  padding: 14px 12px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
+
+.table-wrapper th {
+  background: #f5f7fb;
+  font-weight: 600;
+  color: #333;
+}
+
+.table-wrapper tr:hover {
+  background: #f9fbff;
+}
+
+/* Fix dropdown styling */
+.status-dropdown {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+
+.status-dropdown:hover {
+  border-color: #6c63ff;
+}
+
+.status-dropdown:focus {
+  outline: none;
+  border-color: #6c63ff;
+  box-shadow: 0 0 4px rgba(108,99,255,0.4);
+}
+
+/* .token-table {
   width: 100%;
   border-collapse: collapse;
   background: #fff;
@@ -97,11 +148,14 @@
   padding: 1.8rem;
   text-align: left;
   border-bottom: 1px solid #ddd;
-}
+} */
 .token-table th {
   background: #f4f4f4;
   font-weight: bold;
   font-size: 1.05rem;
+}
+.table-wrapper td {
+  vertical-align: middle;
 }
 
 .token-table td{
@@ -159,3 +213,78 @@
   text-align: center;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
+.filter-controls select,
+.filter-controls input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  min-width: 180px;
+}
+
+.filter-btn {
+  background: linear-gradient(135deg, #6a5acd, #7b68ee);
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+}
+.summary-card {
+  transition: 0.3s;
+}
+.summary-card:hover {
+  transform: translateY(-5px);
+}
+
+.filter-box {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* 🔥 THIS FIXES SPACE */
+  flex-wrap: wrap;
+}
+
+/* Inputs & dropdowns */
+.filter-controls select,
+.filter-controls input {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  min-width: 160px;
+}
+
+/* DatePicker fix */
+.react-datepicker-wrapper {
+  width: auto;
+}
+
+.react-datepicker__input-container input {
+  width: 180px;
+}
+
+/* Button */
+.filter-btn {
+  background: linear-gradient(135deg, #6c63ff, #7a5cff);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.filter-btn:hover {
+  transform: scale(1.05);
+}
+.status.booked { color: orange; font-weight: 600; }
+.status.in_process { color: blue; font-weight: 600; }
+.status.served { color: green; font-weight: 600; }
+.status.cancelled { color: red; font-weight: 600; }
+.status.expired { color: crimson; font-weight: 600; }

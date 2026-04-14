@@ -12,6 +12,6 @@ public interface UserService {
 	Optional<User> findById(Long id);
 	
 	User updateUserProfile(String email, User updatedUser);
-	
-	
+	Optional<User> findByAccountNumber(String accountNumber);
+	 Optional<User> findByAccountNumberAndBranchId(String accountNumber, Long branchId);
 }

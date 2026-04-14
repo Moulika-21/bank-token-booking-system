@@ -16,4 +16,9 @@ public class ServiceService {
 	    public List<BranchService> getAllServices() {
 	        return serviceRepository.findAll();
 	    }
+	    
+	    public List<BranchService> getServicesByBranchId(Long branchId) {
+	        return serviceRepository.findByBranch_Id(branchId);
+	    }
+
 }

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+// import axios from 'axios';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import "../components/summary.css";
+import api from "../api/axios";
 
 const AdminTokenSummary = () => {
   const [summary, setSummary] = useState(null);
@@ -11,20 +12,59 @@ const AdminTokenSummary = () => {
   const [error, setError] = useState(null);
 
   // Filter states
+  const [branches, setBranches] = useState([]);
+  const [services, setServices] = useState([]);
   const [branchId, setBranchId] = useState('');
   const [serviceId, setServiceId] = useState('');
   const [startTime, setStartTime] = useState(new Date());
   const [endTime, setEndTime] = useState(new Date());
+  const [user, setUser] = useState(null);
 
+  useEffect(() => {
+    api.get("/users/me").then(res => {
+      setUser(res.data);
+    });
+  }, []);
   // Fetch summary + today's tokens
+  // useEffect(() => {
+  // // fetch branches
+  //   // api.get("/branches")
+  //   //   .then(res => setBranches(res.data))
+  //   //   .catch(() => console.log("Failed to load branches"));
+
+  //   // fetch services
+  //   api.get("/services")
+  //     .then(res => setServices(res.data))
+  //     .catch(() => console.log("Failed to load services"));
+  // }, []);
+  useEffect(() => {
+    if (!user) return;
+
+    api.get(`/branches/bank/${user.bank.id}`)
+      .then(res => setBranches(res.data))
+      .catch(() => console.log("Failed to load branches"));
+
+  }, [user]);
+
+  useEffect(() => {
+    if (!branchId) return;
+
+    api.get(`/services/branch/${branchId}`)
+      .then(res => setServices(res.data))
+      .catch(() => console.log("Failed to load services"));
+
+  }, [branchId]);
+
   useEffect(() => {
     fetchTodayData();
   }, []);
 
   const fetchTodayData = async () => {
     try {
-      const summaryRes = await axios.get("http://localhost:8083/api/tokens/summary/today");
-      const tokensRes = await axios.get("http://localhost:8083/api/tokens/today");
+      // const summaryRes = await axios.get("http://localhost:8083/api/tokens/summary/today");
+      // const tokensRes = await axios.get("http://localhost:8083/api/tokens/today");
+      const summaryRes = await api.get("/tokens/summary/today");
+      const tokensRes = await api.get("/tokens/today");
 
       setSummary(summaryRes.data);
       setTokens(tokensRes.data);
@@ -37,7 +77,8 @@ const AdminTokenSummary = () => {
 
   const handleFilter = async () => {
     try {
-      const response = await axios.get('http://localhost:8083/api/tokens/filter', {
+      const response = await api.get('/tokens/filter', {
+      // const response = await axios.get('http://localhost:8083/api/tokens/filter', {
         params: {
           branchId,
           serviceId,
@@ -53,7 +94,8 @@ const AdminTokenSummary = () => {
 
   const updateStatus = async (tokenId, newStatus) => {
     try {
-      await axios.put(`http://localhost:8083/api/tokens/${tokenId}/status`, null, { params: { newStatus } });
+      await api.put(`/tokens/${tokenId}/status`, null, { params: { newStatus } });
+      // await axios.put(`http://localhost:8083/api/tokens/${tokenId}/status`, null, { params: { newStatus } });
       setTokens(prevTokens =>
         prevTokens.map(t =>
           t.id === tokenId ? { ...t, status: newStatus } : t
@@ -86,8 +128,21 @@ const AdminTokenSummary = () => {
       <div className='filter-box'>
         <h3>Filter Tokens</h3>
         <div className='filter-controls'>
-          <input type="number" placeholder="Branch ID" value={branchId} onChange={(e) => setBranchId(e.target.value)} />
-          <input type="number" placeholder="Service ID" value={serviceId} onChange={(e) => setServiceId(e.target.value)} />
+          <select value={branchId} onChange={(e) => setBranchId(e.target.value)}>
+            <option value="">Select Branch</option>
+            {branches.map(b => (
+              <option key={b.id} value={b.id}>{b.name}</option>
+            ))}
+          </select>
+
+          <select value={serviceId} onChange={(e) => setServiceId(e.target.value)}>
+            <option value="">Select Service</option>
+            {services.map(s => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+          {/* <input type="number" placeholder="Branch ID" value={branchId} onChange={(e) => setBranchId(e.target.value)} />
+          <input type="number" placeholder="Service ID" value={serviceId} onChange={(e) => setServiceId(e.target.value)} /> */}
           <DatePicker selected={startTime} onChange={(date) => setStartTime(date)} showTimeSelect dateFormat="yyyy-MM-dd'T'HH:mm" />
           <DatePicker selected={endTime} onChange={(date) => setEndTime(date)} showTimeSelect dateFormat="yyyy-MM-dd'T'HH:mm" />
           <button onClick={handleFilter} className='filter-btn'>
@@ -99,7 +154,7 @@ const AdminTokenSummary = () => {
       {/* Token Table */}
       <h3 className='table-title'>Tokens</h3>
       <table className='table-wrapper'>
-        <thead className='token-table'>
+        <thead>
           <tr>
             <th>ID</th>
             <th>Customer Name</th>
@@ -114,9 +169,10 @@ const AdminTokenSummary = () => {
               <td>{token.id}</td>
               <td>{token.user?.name}</td>
               <td>{token.service?.name}</td>
-              <td>{token.status}</td>
+              <td className={`status ${token.status.toLowerCase()}`}>{token.status}</td>
               <td>
                 <select
+                  className="status-dropdown"
                   value={token.status}
                   onChange={(e) => updateStatus(token.id, e.target.value)}
                 >

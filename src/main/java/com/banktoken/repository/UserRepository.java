@@ -13,6 +13,9 @@ import com.banktoken.model.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long>{
 	Optional<User> findByEmail(String email);
+	Optional<User> findByAccountNumber(String accountNumber);
+	Optional<User> findByAccountNumberAndBranchId(String accountNumber, Long branchId);
+
 	
 
 }

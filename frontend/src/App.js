@@ -11,12 +11,30 @@ import TokenBooking from "./pages/TokenBooking";
 import NotFound from "./components/NotFound";
 import AdminTokenSummary from "./pages/AdminTokenSummary";
 import UserProfile from "./pages/UserProfile";
+import { AuthProvider } from "./AuthContext";
 import Home from "./pages/Home";
 import AdminDashboard from "./pages/AdminDashboard";
+
+function Layout({ children }) {
+  return (
+    <div className="main-bg">
+      <header className="header">
+        <Navbar />
+      </header>
+      <main className="main-content">
+        {children}
+      </main>
+      <footer className="footer">
+        &copy; {new Date().getFullYear()} Bank Token Management. All rights reserved.
+      </footer>
+    </div>
+  );
+}
 
 function App() {
 
   return (
+    <AuthProvider>
     <Router>
       <Navbar />
       <Routes>
@@ -33,6 +51,7 @@ function App() {
         <Route path="/" element={<Home />} />
       </Routes>
     </Router>
+    </AuthProvider>
 
   );
 }

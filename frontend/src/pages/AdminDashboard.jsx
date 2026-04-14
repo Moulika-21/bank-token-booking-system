@@ -1,5 +1,6 @@
 import React,{useEffect, useState} from "react";
-import axios from 'axios';
+// import axios from 'axios';
+import api from "../api/axios";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell,ResponsiveContainer
 } from 'recharts';
@@ -42,18 +43,27 @@ const exportCSV = (data, filename,type) => {
 
     let headers = [];
     if(type === "branch") {
-        headers = ["Branch Name", "Token Count"];
+        headers = ["Bank Name","Branch Name", "Token Count"];
     } else if(type === "service") {
-        headers = ["Service Name", "Token Count"];
+        headers = ["Bank Name", "Branch Name","Service Name", "Token Count"];
     }
 
     csvRows.push(headers.join(","));
 
     for (const row of data) {
         if(type === "branch") {
-            csvRows.push([row.name, row.count].join(","));
+            csvRows.push([
+            row.bankName,
+            row.branchName,
+            row.count
+            ].join(","));
         } else if(type === "service") {
-            csvRows.push([row.name, row.count].join(","));
+            csvRows.push([
+            row.bankName,
+            row.branchName,
+            row.serviceName,
+            row.count
+            ].join(","));
         }
     }
 
@@ -76,17 +86,22 @@ const AdminDashboard =() => {
     const fetchStats = async (month="") => {
         try {
             setLoading(true);
-            let branchUrl = "http://localhost:8083/api/tokens/count-by-branch";
-            let serviceUrl = "http://localhost:8083/api/tokens/count-by-service";
-
+            // let branchUrl = "http://localhost:8083/api/tokens/count-by-branch";
+            // let serviceUrl = "http://localhost:8083/api/tokens/count-by-service";
+            let branchUrl = "/tokens/count-by-branch";
+            let serviceUrl = "/tokens/count-by-service";
             if(month){
                 branchUrl += `?month=${month}`;
                 serviceUrl += `?month=${month}`;
             }
 
+            // const [branchRes, serviceRes] = await Promise.all([
+            //     axios.get(branchUrl),
+            //     axios.get(serviceUrl),
+            // ]);
             const [branchRes, serviceRes] = await Promise.all([
-                axios.get(branchUrl),
-                axios.get(serviceUrl),
+                api.get(branchUrl.replace("http://localhost:8083/api", "")),
+                api.get(serviceUrl.replace("http://localhost:8083/api", "")),
             ]);
 
             setByBranch(branchRes.data.map(item => ({
@@ -120,7 +135,7 @@ const AdminDashboard =() => {
                 <h2 className="text-2xl font-bold mb-6">📊 Admin Token Summary</h2>
 
                 {/* Month Filter */}
-                <div>
+                {/* <div>
                   <label className="mr-2 font-medium">Filter by Month:</label>
                   <input
                     type="month"
@@ -128,7 +143,16 @@ const AdminDashboard =() => {
                     onChange={(e) => setSelectedMonth(e.target.value)}
                     className="border px-2 py-1 rounded"
                   />
-                </div>
+                </div> */}
+                <div className="month-filter">
+                    <label>📅 Filter by Month</label>
+                    <input
+                        type="month"
+                        value={selectedMonth}
+                        onChange={(e) => setSelectedMonth(e.target.value)}
+                        className="month-input"
+                    />
+                    </div>
             </div>
 
             <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -147,7 +171,7 @@ const AdminDashboard =() => {
                             <tbody>
                                 {byBranch.map((item,idx) => (
                                     <tr key={idx}>
-                                        <td className="border p-2">{item.name}</td>
+                                        <td className="border p-2">{item.branchName}</td>
                                         <td className="border p-2">{item.count}</td>
                                     </tr>
                                 ))}
@@ -155,7 +179,7 @@ const AdminDashboard =() => {
                         </table>
                         <ResponsiveContainer width={400} height={250}>
                         <BarChart data={byBranch}>
-                            <XAxis dataKey="branch" />
+                            <XAxis dataKey="branchName" />
                             <YAxis allowDecimals={false} domain={[0, 'dataMax']} tickCount={6}/>
                             <Tooltip content={<CustomTooltip />} />
                             <Legend />
@@ -179,7 +203,7 @@ const AdminDashboard =() => {
                         <tbody>
                             {byService.map((item, idx) => (
                                 <tr key={idx}>
-                                <td className="border p-2">{item.name}</td>
+                                <td className="border p-2">{item.serviceName}</td>
                                 <td className="border p-2">{item.count}</td>
                                 </tr>
                             ))}

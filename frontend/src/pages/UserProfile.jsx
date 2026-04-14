@@ -1,224 +1,160 @@
-// import React, { useState, useEffect } from "react";
-// import axios from "axios";
-// import "../components/userprofile.css"; // Import the CSS
-
-// const UserProfile = () => {
-//   const [user, setUser] = useState({
-//     name: "",
-//     email: "",
-//     branch: { name: "" },
-//     phoneNumber: "",
-//     profileImage: "",
-//   });
-
-//   const [editing, setEditing] = useState(false);
-
-//   useEffect(() => {
-//     const userId = localStorage.getItem("userId");
-//     if (userId) {
-//       axios
-//         .get(`http://localhost:8083/api/users/id/${userId}`)
-//         .then((res) => setUser(res.data))
-//         .catch((err) => console.error("Error fetching user:", err));
-//     }
-//   }, []);
-
-//   const handleChange = (e) => {
-//     const { name, value } = e.target;
-
-//     if (name.startsWith("branch")) {
-//       setUser({ ...user, branch: { ...user.branch, name: value } });
-//     } else {
-//       setUser({ ...user, [name]: value });
-//     }
-//   };
-
-//   const handleUpdate = () => {
-//     axios
-//       .put(`http://localhost:8083/api/users/update/${user.email}`, user)
-//       .then(() => {
-//         alert("Profile updated successfully!");
-//         setEditing(false);
-//       })
-//       .catch((err) => console.error("Error updating profile:", err));
-//   };
-
-//   return (
-//     <div className="profile-container">
-//       <h2 className="profile-title">👤 My Profile</h2>
-
-//       {!editing ? (
-//         <div className="profile-card">
-//           {user.profileImage && (
-//             <img
-//               src={user.profileImage}
-//               alt="Profile"
-//               className="profile-img"
-//             />
-//           )}
-//           <p>
-//             <b>Name:</b> {user.name}
-//           </p>
-//           <p>
-//             <b>Email:</b> {user.email}
-//           </p>
-//           <p>
-//             <b>Phone:</b> {user.phoneNumber}
-//           </p>
-//           <p>
-//             <b>Branch:</b> {user.branch?.name}
-//           </p>
-//           <button className="edit-btn" onClick={() => setEditing(true)}>
-//             Edit Profile
-//           </button>
-//         </div>
-//       ) : (
-//         <div className="edit-form">
-//           <input
-//             name="name"
-//             value={user.name}
-//             onChange={handleChange}
-//             placeholder="Name"
-//           />
-//           <input
-//             name="phoneNumber"
-//             value={user.phoneNumber}
-//             onChange={handleChange}
-//             placeholder="Phone"
-//           />
-//           <input
-//             name="branchName"
-//             value={user.branch?.name}
-//             onChange={(e) =>
-//               setUser({ ...user, branch: { ...user.branch, name: e.target.value } })
-//             }
-//             placeholder="Branch"
-//           />
-//           <div className="form-actions">
-//             <button className="save-btn" onClick={handleUpdate}>
-//               Save
-//             </button>
-//             <button className="cancel-btn" onClick={() => setEditing(false)}>
-//               Cancel
-//             </button>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default UserProfile;
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import "../components/userprofile.css"; // Custom CSS
+import api from "../api/axios";
+import "../components/userprofile.css";
+import { useAuth } from "../AuthContext";
+
+const maskSensitiveData = (value, type) => {
+  if (!value) return "";
+  const str = String(value);
+  if (str.length <= 4) return str;
+  const masked = "X".repeat(str.length - 4) + str.slice(-4);
+  return masked;
+};
 
 const UserProfile = () => {
-  const [user, setUser] = useState({
-    name: "",
-    email: "",
-    branch: { name: "" },
-    phoneNumber: "",
-    profileImage: "",
+  const { user: authUser } = useAuth();
+
+  const [user, setUser] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: "",
+    newPassword: "",
   });
 
-  const [editing, setEditing] = useState(false);
-
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    if (userId) {
-      axios
-        .get(`http://localhost:8083/api/users/id/${userId}`)
-        .then((res) => setUser(res.data))
-        .catch((err) => console.error("Error fetching user:", err));
-    }
-  }, []);
+    if (!authUser) return;
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name.startsWith("branch")) {
-      setUser({ ...user, branch: { ...user.branch, name: value } });
-    } else {
-      setUser({ ...user, [name]: value });
+    api.get(`/users/id/${authUser.id}`)
+      .then(res => setUser(res.data))
+      .catch(err => console.error(err));
+  }, [authUser]);
+
+  if (!user) return null;
+
+  /* ---------------- EDIT PROFILE ---------------- */
+
+  const handleProfileChange = (e) => {
+    setUser({ ...user, [e.target.name]: e.target.value });
+  };
+
+  const saveProfile = async () => {
+    try {
+      await api.put(`/users/update/${user.email}`, {
+        phoneNumber: user.phoneNumber,
+      });
+      alert("✅ Profile updated");
+      setEditing(false);
+    } catch {
+      alert("❌ Update failed");
     }
   };
 
-  const handleUpdate = () => {
-    axios
-      .put(`http://localhost:8083/api/users/update/${user.email}`, user)
-      .then(() => {
-        alert("✅ Profile updated successfully!");
-        setEditing(false);
-      })
-      .catch((err) => console.error("Error updating profile:", err));
+  /* ---------------- CHANGE PASSWORD ---------------- */
+
+  const handlePasswordChange = (e) => {
+    setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+  };
+
+  const updatePassword = async () => {
+    try {
+      await api.put("/users/change-password", passwordData);
+      alert("✅ Password updated");
+      setChangingPassword(false);
+      setPasswordData({ oldPassword: "", newPassword: "" });
+    } catch {
+      alert("❌ Password update failed");
+    }
   };
 
   return (
-    <>
     <div className="my-profile">
-    <div className="profile-wrapper">
-      <h2 className="profile-heading">👤 My Profile</h2>
+      <div className="profile-wrapper">
+        <h2 className="profile-heading">👤 My Profile</h2>
 
-      {!editing ? (
+        {/* ================= PROFILE CARD ================= */}
         <div className="profile-card">
-          <div className="profile-top">
-            {user.profileImage ? (
-              <img src={user.profileImage} alt="Profile" className="profile-img" />
-            ) : (
-              <div className="profile-placeholder">👤</div>
-            )}
-            <h3>{user.name}</h3>
-            <p className="profile-email">{user.email}</p>
-          </div>
+          <div className="profile-placeholder">👤</div>
+          <h3>{user.name}</h3>
+          <p className="profile-email">{user.email}</p>
 
           <div className="profile-details">
-            <p><b>📞 Phone:</b> {user.phoneNumber}</p>
-            <p><b>🏦 Branch:</b> {user.branch?.name}</p>
+            <p><b>🏦 Bank:</b> {user.bank?.name}</p>
+            <p><b>🏢 Branch:</b> {user.branch?.name}</p>
+            <p><b>💳 Account:</b> {maskSensitiveData(user.accountNumber, 'account')}</p>
+            <p><b>📞 Phone:</b> {maskSensitiveData(user.phoneNumber, 'phone')}</p>
           </div>
 
-          <button className="edit-btn" onClick={() => setEditing(true)}>
-            ✏️ Edit Profile
-          </button>
-        </div>
-      ) : (
-        <div className="edit-card">
-          <h3>Edit Profile</h3>
-          <input
-            className="input-field"
-            name="name"
-            value={user.name}
-            onChange={handleChange}
-            placeholder="Full Name"
-          />
-          <input
-            className="input-field"
-            name="phoneNumber"
-            value={user.phoneNumber}
-            onChange={handleChange}
-            placeholder="Phone Number"
-          />
-          <input
-            className="input-field"
-            name="branchName"
-            value={user.branch?.name}
-            onChange={(e) =>
-              setUser({ ...user, branch: { ...user.branch, name: e.target.value } })
-            }
-            placeholder="Branch"
-          />
           <div className="form-actions">
-            <button className="save-btn" onClick={handleUpdate}>💾 Save</button>
-            <button className="cancel-btn" onClick={() => setEditing(false)}>❌ Cancel</button>
+            <button className="edit-btn" onClick={() => {
+              setEditing(!editing);
+              setChangingPassword(false);
+            }}>
+               Edit Profile
+            </button>
+
+            <button className="edit-btn" style={{ background: "#8e44ad" }} onClick={() => {
+              setChangingPassword(!changingPassword);
+              setEditing(false);
+            }}>
+               Change Password
+            </button>
           </div>
         </div>
-      )}
+
+        {/* ================= EDIT PROFILE ================= */}
+        {editing && (
+          <div className="edit-card">
+            <h3>Edit Profile</h3>
+
+            <input
+              className="input-field"
+              value={user.phoneNumber}
+              name="phoneNumber"
+              onChange={handleProfileChange}
+              placeholder="Phone Number"
+            />
+
+            <div className="form-actions">
+              <button className="save-btn" onClick={saveProfile}> Save</button>
+              <button className="cancel-btn" onClick={() => setEditing(false)}>❌ Cancel</button>
+            </div>
+          </div>
+        )}
+
+        {/* ================= CHANGE PASSWORD ================= */}
+        {changingPassword && (
+          <div className="edit-card">
+            <h3>Change Password</h3>
+
+            <input
+              className="input-field"
+              type="password"
+              name="oldPassword"
+              placeholder="Old Password"
+              value={passwordData.oldPassword}
+              onChange={handlePasswordChange}
+            />
+
+            <input
+              className="input-field"
+              type="password"
+              name="newPassword"
+              placeholder="New Password"
+              value={passwordData.newPassword}
+              onChange={handlePasswordChange}
+            />
+
+            <div className="form-actions">
+              <button className="save-btn" onClick={updatePassword}> Update</button>
+              <button className="cancel-btn" onClick={() => setChangingPassword(false)}>Cancel</button>
+            </div>
+          </div>
+        )}
+
+      </div>
     </div>
-    
-    </div>
-    <footer className="footer">
-      &copy; {new Date().getFullYear()} Bank Token Booking System. All rights reserved.
-    </footer>
-    </>
   );
 };
 
