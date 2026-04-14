@@ -1,84 +1,211 @@
-Bank Token Management System<br>
-A backend-driven full-stack application designed to reduce waiting time at banks by enabling users to book service tokens online and allowing administrators to manage and monitor service flow efficiently.<br>
+# 🏦 Bank Token Management System
 
-Project Overview:<br>
-This system allows users to book bank service tokens in advance instead of waiting in long queues. It includes secure authentication, OTP-based booking verification, role-based access control, and real-time dashboard analytics.<br>
-The backend is designed with strong emphasis on data consistency, access control, and scalable API design.
+## 📌 Project Overview
 
-## Mapping to Assignment Requirements
+The **Bank Token Management System** is a full-stack web application designed to reduce waiting time and improve customer experience in banks.
+It allows users to book tokens online for banking services and helps administrators efficiently manage queues, monitor transactions, and generate reports.
 
-| Assignment Requirement | Implementation in This Project |
-|----------------------|--------------------------------|
-| User & Role Management | Implemented using User and Admin roles with JWT authentication |
-| Financial Records | Token bookings are treated as structured records with attributes like date, branch, and status |
-| Dashboard Summary APIs | Admin dashboard provides aggregated data such as total bookings, completed, pending, and cancelled tokens |
-| Access Control Logic | Role-based restrictions ensure only admins can update token status |
-| Data Persistence | MySQL database used for storing users, tokens, slots, and OTP data |
-| Validation & Error Handling | Includes OTP verification and input validation |
-| Concurrency Handling | Pessimistic locking prevents multiple bookings |
+The system ensures **secure authentication, real-time slot booking, OTP verification, and admin analytics dashboards**.
 
-## 👤 User Features
+---
 
-- User Registration & Login (JWT with cookies)
-- Book tokens based on bank, branch, and available slots
-- OTP-based verification before confirming booking
-- Cancel booked tokens
-- View booking history
-  
-##🛠️ Admin Features
+## 🚀 Key Features
 
- - View dashboard with:
- - Total tokens booked
- - Completed tokens
- - Pending tokens
- - Cancelled tokens
- - Filter data based on date and time
- - Update token status:
-     -  Pending
-     -  In Progress
-     -  Completed
-     -  Cancelled
-      
-## 🧠 Backend Highlights
-  - Role-Based Access Control (RBAC)
-  - Secure JWT Authentication with cookies
-  - OTP verification system
-  - RESTful API design
-  - Efficient database schema design
-  - Pessimistic locking for concurrency control
-    - Prevents multiple users from booking the same slot at the same time
-    - Ensures data consistency and avoids race conditions
+### 👤 User Features
 
-## 🛠️ Tech Stack
-  - Backend: Spring Boot
-  - Frontend: React
-  - Database: MySQL
-  - Authentication: JWT + Cookies
-  - Email Service: SMTP (for OTP verification)
+* 🔐 **User Authentication**
 
-##API Endpoints (Sample):
-  - POST /api/users/register → Register user
-  - POST /api/users/login → Login
-  - POST /api/tokens/book → Book token (with OTP)
-  - Put /api/token-id/cancel → Cancel token
-  - GET /api/banks/user -> Get all the banks of the user 
-  - GET /api/branches/bank -> get branches of the bank
-  - GET /api/services/branch -> Get services of the branch
-  - GET /api/tokens/user → View user bookings
-  - GET /api/filter -> filter the tokens based on requirements
-  - GET /api/summary/today -> get summary of todays tokens
-  - GET /api/count-by-branch -> get the number of tokens by branch for today
-  - GER /api/count-by-service -> get the number of tokens for a service by branch for today
-  - PUT /api/token/status → Update token status
+  * Secure login & registration using JWT
+  * Access & refresh token mechanism
+* 👤 **Profile Management**
 
-##🗄️ Database Design
+  * View and update personal details
+* 🎟️ **Token Booking**
 
--Main tables:
-   - User
-   - Token
-   - Account
-   - Bank
-   - Branch
-   - BranchService
-   - TokenStatus
-<!-- <img width="1907" height="914" alt="Screenshot 2025-08-31 225413" src="https://github.com/user-attachments/assets/2cadb0b3-d9bf-445a-abbd-653a1a671b50" /> -->
+  * Book tokens for bank services
+  * Slot-based booking system
+* ⏱️ **Smart Slot Allocation**
+
+  * Time slots based on service type:
+
+    * Deposit/Withdraw → 5 mins
+    * Loan Enquiry → 20 mins
+  * Excludes:
+
+    * Lunch break (1:00 PM – 2:00 PM)
+    * Tea breaks
+    * Weekends
+    * Past time slots (for current day)
+* 📧 **OTP Verification**
+
+  * OTP sent to email before booking
+  * OTP expiry handling
+* 📋 **My Tokens**
+
+  * View booked tokens
+  * Track status (Booked, Processing, Served, Cancelled, Expired)
+
+---
+
+### 🛠️ Admin Features
+
+* 📊 **Dashboard**
+
+  * Visual representation using charts (Bar & Pie)
+  * Token distribution:
+
+    * By Branch
+    * By Service
+* 📈 **Summary Panel**
+
+  * Total Tokens
+  * Booked / Completed / Processing / Cancelled / Expired
+* 🔍 **Advanced Filtering**
+
+  * Filter tokens by:
+
+    * Branch
+    * Service
+    * Date & Time range
+* 🔄 **Token Status Management**
+
+  * Update token status (Processing, Served, etc.)
+  * Email notification on completion
+* 📥 **Report Generation**
+
+  * Download CSV reports:
+
+    * Branch-wise
+    * Service-wise
+  * Includes:
+
+    * Bank Name
+    * Branch Name
+    * Service Name
+    * Token Count
+
+---
+
+## 🧠 Core Functionalities
+
+### 🔑 Authentication System
+
+* JWT-based authentication
+* Access Token (short-lived)
+* Refresh Token (stored in HTTP-only cookies)
+* Automatic token refresh using Axios interceptors
+
+---
+
+### 📅 Slot Management Logic
+
+* Dynamic slot generation based on:
+
+  * Service duration
+  * Working hours (9 AM – 5 PM)
+* Skips:
+
+  * Lunch & tea breaks
+  * Already booked slots
+  * Past time slots
+
+---
+
+### 🔐 Security Features
+
+* Role-based access control (User / Admin)
+* Protected routes (frontend & backend)
+* Secure cookie handling
+* Email OTP verification
+
+---
+
+## 🏗️ Tech Stack
+
+### 🔹 Frontend
+
+* React.js
+* Axios (API handling)
+* React Router
+* CSS (Custom styling)
+
+### 🔹 Backend
+
+* Spring Boot
+* Spring Security
+* JWT Authentication
+* JPA / Hibernate
+
+### 🔹 Database
+
+* MySQL
+
+### 🔹 Tools
+
+* Postman (API testing)
+* Git & GitHub (version control)
+* Spring Tool Suite (STS)
+* VS Code
+
+---
+
+## ⚙️ Project Architecture
+
+```
+Frontend (React)
+        ↓
+Axios API Calls
+        ↓
+Spring Boot Backend (REST APIs)
+        ↓
+Service Layer (Business Logic)
+        ↓
+Repository Layer (JPA)
+        ↓
+MySQL Database
+```
+
+---
+
+## 📌 API Highlights
+
+* `/api/users/login` → Login user
+* `/api/users/auth/refresh` → Refresh token
+* `/api/tokens/send-otp` → Send OTP
+* `/api/tokens/verify-otp` → Verify OTP & book token
+* `/api/tokens/count-by-branch` → Dashboard data
+* `/api/tokens/filter` → Filter tokens
+
+---
+
+## 🎯 Unique Points of the Project
+
+* ✅ Real-time slot booking with constraints
+* ✅ OTP-based secure token booking
+* ✅ Admin analytics dashboard
+* ✅ JWT + Refresh Token implementation
+* ✅ Bank-specific admin data isolation
+* ✅ CSV report generation
+* ✅ Full-stack integration (React + Spring Boot)
+
+---
+
+## 📸 Screens (Optional)
+
+* Login Page
+* Home Page
+* Token Booking Page
+* My tokens Page
+* User Profile Page
+* Admin Dashboard
+* Summary Page
+
+---
+
+
+
+
+
+## ⭐ Conclusion
+
+This project demonstrates a complete real-world application with **authentication, scheduling logic, secure transactions, and analytics**, making it highly relevant for banking and service-based systems.
